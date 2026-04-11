@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-FYTA Dashboard server — serves static files and proxies:
-  /api/*      → https://web.fyta.de/api/*        (JSON, auth from browser)
-  /img-proxy/* → https://api.prod.fyta-app.de/*  (images, auth from config.js)
+FYTA Dashboard server — serves dist/ and proxies:
+  /api/*       → https://web.fyta.de/api/*        (JSON, auth from browser)
+  /img-proxy/* → https://api.prod.fyta-app.de/*   (images, auth from config.js)
 Usage: python3 server.py
 """
 import http.server
+import os
 import re
 import urllib.request
 import urllib.error
@@ -13,6 +14,7 @@ import urllib.error
 PORT = 8080
 UPSTREAM     = "https://web.fyta.de"
 IMG_UPSTREAM = "https://api.prod.fyta-app.de"
+DIST_DIR     = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dist')
 
 
 def _load_token():
@@ -21,13 +23,25 @@ def _load_token():
             m = re.search(r"api_token:\s*['\"]([^'\"]+)['\"]", f.read())
             return m.group(1) if m else ''
     except FileNotFoundError:
+        pass
+    # Also try .env.local
+    try:
+        with open('.env.local') as f:
+            for line in f:
+                if line.startswith('VITE_API_TOKEN='):
+                    return line.split('=', 1)[1].strip()
+    except FileNotFoundError:
         return ''
+    return ''
 
 
 TOKEN = _load_token()
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=DIST_DIR, **kwargs)
+
     def do_OPTIONS(self):
         if self.path.startswith('/api/'):
             self.send_response(200)
@@ -65,7 +79,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_error(e.code, e.reason)
 
     def _proxy_img(self):
-        # /img-proxy/user-plant/123/thumb_path?... → api.prod.fyta-app.de/user-plant/...
         img_path = self.path[len('/img-proxy'):]
         url = IMG_UPSTREAM + img_path
         req = urllib.request.Request(url, headers={
@@ -89,6 +102,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
+    if not os.path.isdir(DIST_DIR):
+        print(f"ERROR: dist/ not found — run 'npm run build' first")
+        raise SystemExit(1)
     with http.server.HTTPServer(('', PORT), Handler) as srv:
         print(f"FYTA Dashboard → http://localhost:{PORT}")
         srv.serve_forever()

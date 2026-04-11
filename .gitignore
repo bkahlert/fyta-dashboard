@@ -1,5 +1,13 @@
 # Local config — contains your API token, never commit this
 config.js
+.env.local
+
+# Build output
+dist/
+node_modules/
+
+# Brainstorm session files
+.superpowers/
 
 # macOS
 .DS_Store

@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""
+FYTA Dashboard server — serves static files and proxies:
+  /api/*      → https://web.fyta.de/api/*        (JSON, auth from browser)
+  /img-proxy/* → https://api.prod.fyta-app.de/*  (images, auth from config.js)
+Usage: python3 server.py
+"""
+import http.server
+import re
+import urllib.request
+import urllib.error
+
+PORT = 8080
+UPSTREAM     = "https://web.fyta.de"
+IMG_UPSTREAM = "https://api.prod.fyta-app.de"
+
+
+def _load_token():
+    try:
+        with open('config.js') as f:
+            m = re.search(r"api_token:\s*['\"]([^'\"]+)['\"]", f.read())
+            return m.group(1) if m else ''
+    except FileNotFoundError:
+        return ''
+
+
+TOKEN = _load_token()
+
+
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def do_OPTIONS(self):
+        if self.path.startswith('/api/'):
+            self.send_response(200)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Authorization, Accept')
+            self.end_headers()
+        else:
+            super().do_OPTIONS()
+
+    def do_GET(self):
+        if self.path.startswith('/api/'):
+            self._proxy_api()
+        elif self.path.startswith('/img-proxy/'):
+            self._proxy_img()
+        else:
+            super().do_GET()
+
+    def _proxy_api(self):
+        url  = UPSTREAM + self.path
+        auth = self.headers.get('Authorization', '')
+        req  = urllib.request.Request(url, headers={
+            'Authorization': auth,
+            'Accept': 'application/json',
+        })
+        try:
+            with urllib.request.urlopen(req) as resp:
+                body = resp.read()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(body)
+        except urllib.error.HTTPError as e:
+            self.send_error(e.code, e.reason)
+
+    def _proxy_img(self):
+        # /img-proxy/user-plant/123/thumb_path?... → api.prod.fyta-app.de/user-plant/...
+        img_path = self.path[len('/img-proxy'):]
+        url = IMG_UPSTREAM + img_path
+        req = urllib.request.Request(url, headers={
+            'Authorization': f'Bearer {TOKEN}',
+            'Accept': 'image/*,*/*',
+        })
+        try:
+            with urllib.request.urlopen(req) as resp:
+                body         = resp.read()
+                content_type = resp.headers.get('Content-Type', 'image/jpeg')
+            self.send_response(200)
+            self.send_header('Content-Type', content_type)
+            self.send_header('Cache-Control', 'public, max-age=3600')
+            self.end_headers()
+            self.wfile.write(body)
+        except urllib.error.HTTPError as e:
+            self.send_error(e.code, e.reason)
+
+    def log_message(self, fmt, *args):
+        pass  # silence access log
+
+
+if __name__ == '__main__':
+    with http.server.HTTPServer(('', PORT), Handler) as srv:
+        print(f"FYTA Dashboard → http://localhost:{PORT}")
+        srv.serve_forever()

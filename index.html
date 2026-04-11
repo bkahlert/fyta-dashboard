@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>🌿 FYTA Dashboard</title>
+
+  <!--
+    FYTA Dashboard — Phase 1
+    ────────────────────────
+    Reads credentials from config.js (never entered in the browser).
+    See config.example.js — copy it to config.js and paste your API token.
+
+    Get your token at: https://web.fyta.de  → API Token tab
+  -->
+
+  <style>
+    :root {
+      --bg:          #0d1b14;
+      --surface:     #132218;
+      --card:        #1a2e20;
+      --card-border: #2a4530;
+      --card-hover:  #1f3626;
+      --text:        #e0f0e5;
+      --muted:       #7a9e84;
+      --accent:      #3ecf78;
+      --green:       #3ecf78;
+      --green-dim:   #1a5c35;
+      --yellow:      #f0c040;
+      --yellow-dim:  #5c4a10;
+      --red:         #e05252;
+      --red-dim:     #5c1a1a;
+      --blue:        #4ab0f5;
+      --header-h:    64px;
+      --radius:      16px;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Helvetica, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── CONFIG ERROR ─── */
+    #config-error {
+      display: none;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .config-error-box {
+      background: var(--card);
+      border: 1.5px solid rgba(224,82,82,.4);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 540px;
+    }
+
+    .config-error-box .logo { font-size: 40px; margin-bottom: 16px; display: block; }
+    .config-error-box h1 { font-size: 22px; margin-bottom: 12px; }
+    .config-error-box p  { color: var(--muted); font-size: 14px; line-height: 1.65; margin-bottom: 16px; }
+
+    .step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .step-num {
+      background: var(--accent);
+      color: var(--bg);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 8px; }
+
+    .code {
+      background: var(--surface);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      white-space: pre;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: rgba(13,27,20,.9);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    header h1 { font-size: 20px; font-weight: 700; letter-spacing: -.4px; }
+    .header-right { display: flex; align-items: center; gap: 14px; }
+
+    #last-updated { font-size: 13px; color: var(--muted); }
+    #countdown    { font-size: 12px; color: var(--muted); min-width: 100px; text-align: right; }
+
+    .btn-icon {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-icon:hover    { background: var(--card-hover); }
+    .btn-icon:disabled { opacity: .5; cursor: default; }
+
+    .spin { animation: spin .8s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── SUMMARY BAR ─── */
+    #summary-bar {
+      display: none;
+      padding: 12px 28px;
+      gap: 10px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--card-border);
+      background: var(--surface);
+    }
+
+    .chip.alert  { border-color: rgba(224,82,82,.4); color: var(--red);    background: rgba(224,82,82,.07); }
+    .chip.warn   { border-color: rgba(240,192,64,.4); color: var(--yellow); background: rgba(240,192,64,.06); }
+    .chip.ok     { border-color: rgba(62,207,120,.3); color: var(--green);  background: rgba(62,207,120,.06); }
+
+    /* ─── GRID ─── */
+    #plants-grid {
+      padding: 28px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    /* ─── STATES ─── */
+    #loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 24px;
+      gap: 16px;
+      color: var(--muted);
+    }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(62,207,120,.12);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    #error-banner {
+      display: none;
+      background: rgba(224,82,82,.07);
+      border: 1px solid rgba(224,82,82,.3);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 28px;
+      color: var(--red);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .empty-state span { font-size: 48px; display: block; margin-bottom: 16px; }
+
+    /* ─── PLANT CARD ─── */
+    .plant-card {
+      background: var(--card);
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color .2s, transform .15s;
+      animation: fadeIn .35s ease;
+    }
+
+    .plant-card:hover         { border-color: #3a5540; transform: translateY(-2px); }
+    .plant-card.needs-water   { border-color: rgba(74,176,245,.5); }
+    .plant-card.critical      { border-color: rgba(224,82,82,.6); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* photo */
+    .card-photo {
+      height: 165px;
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-photo img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform .3s;
+    }
+
+    .plant-card:hover .card-photo img { transform: scale(1.04); }
+    .photo-placeholder { font-size: 72px; opacity: .3; user-select: none; }
+
+    /* badge */
+    .badge {
+      position: absolute;
+      top: 12px; right: 12px;
+      padding: 5px 11px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .badge-critical {
+      background: rgba(224,82,82,.3);
+      color: var(--red);
+      border: 1px solid rgba(224,82,82,.5);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    .badge-warn {
+      background: rgba(74,176,245,.22);
+      color: var(--blue);
+      border: 1px solid rgba(74,176,245,.4);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .badge-ok  { background: rgba(62,207,120,.1); color: var(--green); border: 1px solid rgba(62,207,120,.25); }
+    .badge-wet { background: rgba(240,192,64,.12); color: var(--yellow); border: 1px solid rgba(240,192,64,.3); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .5; }
+    }
+
+    /* garden tag */
+    .garden-tag {
+      position: absolute;
+      bottom: 10px; left: 12px;
+      background: rgba(13,27,20,.72);
+      backdrop-filter: blur(6px);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* card body */
+    .card-body { padding: 18px 20px 16px; }
+
+    .card-body h2 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-species {
+      font-size: 13px;
+      color: var(--muted);
+      font-style: italic;
+      margin-bottom: 16px;
+      min-height: 18px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* moisture hero */
+    .moisture-hero {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 13px 15px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .m-icon {
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .m-icon.green  { background: var(--green-dim); }
+    .m-icon.yellow { background: var(--yellow-dim); }
+    .m-icon.red    { background: var(--red-dim); }
+    .m-icon.blue   { background: rgba(74,176,245,.12); }
+    .m-icon.muted  { background: rgba(255,255,255,.05); }
+
+    .m-info { flex: 1; min-width: 0; }
+
+    .m-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .m-value {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -.4px;
+      line-height: 1.1;
+    }
+
+    .m-value.green  { color: var(--green); }
+    .m-value.yellow { color: var(--yellow); }
+    .m-value.red    { color: var(--red); }
+    .m-value.blue   { color: var(--blue); }
+    .m-value.muted  { color: var(--muted); }
+
+    .m-desc { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* sensors */
+    .sensors { display: flex; flex-direction: column; gap: 10px; }
+
+    .sensor-row {
+      display: grid;
+      grid-template-columns: 20px 1fr 78px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .s-icon { font-size: 15px; text-align: center; }
+
+    .bar-track { height: 5px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width .7s ease;
+    }
+
+    .bar-fill.green  { background: var(--green); }
+    .bar-fill.yellow { background: var(--yellow); }
+    .bar-fill.red    { background: var(--red); }
+    .bar-fill.blue   { background: var(--blue); }
+    .bar-fill.muted  { background: rgba(255,255,255,.15); }
+
+    .s-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .s-label.green  { color: var(--green); }
+    .s-label.yellow { color: var(--yellow); }
+    .s-label.red    { color: var(--red); }
+    .s-label.blue   { color: var(--blue); }
+    .s-label.muted  { color: var(--muted); }
+
+    /* footer */
+    .card-footer {
+      border-top: 1px solid var(--card-border);
+      margin: 14px 20px 0;
+      padding: 10px 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 600px) {
+      header          { padding: 0 16px; }
+      header h1       { font-size: 17px; }
+      #last-updated, #countdown { display: none; }
+      #plants-grid    { padding: 16px; gap: 14px; }
+      #summary-bar    { padding: 10px 16px; }
+    }
+
+    @media (min-width: 1024px) {
+      #plants-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+      .card-photo  { height: 180px; }
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║       CONFIG ERROR SCREEN        ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<div id="config-error">
+  <div class="config-error-box">
+    <span class="logo">🌿</span>
+    <h1>One-time setup needed</h1>
+    <p>The dashboard needs a <strong>config.js</strong> file with your FYTA API token.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>Get your token at <strong>web.fyta.de → API Token</strong></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>Copy the example and paste your token:</p>
+        <div class="code">cp config.example.js config.js
+# edit config.js → paste your token</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Serve locally and reload:</p>
+        <div class="code">python3 server.py
+# → http://localhost:8080</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════╗ -->
+<!-- ║             DASHBOARD            ║ -->
+<!-- ╚══════════════════════════════════╝ -->
+<div id="app" style="display:none">
+
+  <header>
+    <div class="header-left">
+      <span>🌿</span>
+      <h1>My Plants</h1>
+    </div>
+    <div class="header-right">
+      <span id="last-updated"></span>
+      <span id="countdown"></span>
+      <button class="btn-icon" id="refresh-btn" onclick="manualRefresh()">
+        <span id="refresh-icon">↻</span> Refresh
+      </button>
+    </div>
+  </header>
+
+  <div id="summary-bar"></div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <span>Loading your plants…</span>
+  </div>
+
+  <div id="error-banner"></div>
+  <div id="plants-grid"></div>
+
+</div>
+
+<!-- config.js is loaded here — define FYTA_CONFIG before the main script -->
+<!--
+  Expected shape (config.js):
+    const FYTA_CONFIG = {
+      api_token: 'paste-your-token-from-web.fyta.de-here'
+    };
+-->
+<script src="config.js" onerror="showConfigError()"></script>
+<script>
+
+/* ════════════════════════════════════════
+   Config
+═══════════════════════════════════════ */
+const API        = '/api';
+const REFRESH_MS = 5 * 60 * 1000; // 5 minutes
+
+/* ════════════════════════════════════════
+   Status helpers
+   1=too_low  2=low  3=perfect  4=high  5=too_high  0=no sensor
+═══════════════════════════════════════ */
+const STATUS = {
+  0: { label: 'No sensor', color: 'muted',  bar: 0  },
+  1: { label: 'Too dry',   color: 'red',    bar: 8  },
+  2: { label: 'Low',       color: 'yellow', bar: 28 },
+  3: { label: 'Perfect',   color: 'green',  bar: 70 },
+  4: { label: 'High',      color: 'yellow', bar: 87 },
+  5: { label: 'Too wet',   color: 'blue',   bar: 98 },
+};
+
+const MOISTURE_HEADLINE = {
+  0: 'No sensor',
+  1: 'Needs Water',
+  2: 'Water Soon',
+  3: 'Well Watered',
+  4: 'Slightly Wet',
+  5: 'Overwatered',
+};
+
+const MOISTURE_DESC = {
+  0: '',
+  1: 'Pour water now',
+  2: 'Water within the next day',
+  3: 'All good — nothing to do',
+  4: 'Let the soil dry out',
+  5: 'Stop watering for a while',
+};
+
+const MOISTURE_EMOJI = { 0:'🪴', 1:'💧', 2:'💧', 3:'✅', 4:'🚿', 5:'🌊' };
+
+const si = c => STATUS[c ?? 0] ?? STATUS[0];
+
+/* ════════════════════════════════════════
+   Startup
+═══════════════════════════════════════ */
+function showConfigError() {
+  document.getElementById('config-error').style.display = 'flex';
+}
+
+async function init() {
+  if (typeof FYTA_CONFIG === 'undefined' || !FYTA_CONFIG.api_token) {
+    showConfigError();
+    return;
+  }
+
+  document.getElementById('app').style.display = 'block';
+  await loadPlants();
+  startTimers();
+}
+
+/* ════════════════════════════════════════
+   API
+═══════════════════════════════════════ */
+async function apiFetch(path) {
+  return fetch(`${API}${path}`, {
+    headers: {
+      'Authorization': `Bearer ${FYTA_CONFIG.api_token}`,
+      'Accept': 'application/json',
+    },
+  });
+}
+
+async function loadPlants() {
+  showLoading(true);
+  showError(null);
+
+  let res;
+  try {
+    res = await apiFetch('/user-plant');
+  } catch (err) {
+    showError(`Network error: ${err.message}<br/><br/>
+      Make sure you're running the proxy server:<br/>
+      <code>python3 server.py</code> → open
+      <a href="http://localhost:8080" style="color:var(--accent)">http://localhost:8080</a>`);
+    return;
+  }
+
+  if (res.status === 401) {
+    showError('Invalid API token. Double-check the token in config.js — get it at <strong>web.fyta.de → API Token</strong>.');
+    return;
+  }
+
+  if (!res.ok) {
+    showError(`API returned ${res.status} ${res.statusText}`);
+    return;
+  }
+
+  const data = await res.json();
+  const plants = flattenPlants(data);
+  render(plants);
+  showLoading(false);
+
+  document.getElementById('last-updated').textContent =
+    `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+}
+
+function flattenPlants(data) {
+  let plants = [];
+
+  if (Array.isArray(data))              plants = data;
+  else if (Array.isArray(data.plants))  plants = data.plants;
+  else if (Array.isArray(data.gardens)) {
+    data.gardens.forEach(g =>
+      (g.plants ?? []).forEach(p => plants.push({ ...p, _garden: g.name }))
+    );
+  }
+
+  // Urgency sort: too dry → water soon → too wet → slightly wet → perfect → no sensor
+  const urgency = p => [1, 2, 5, 4, 3, 0].indexOf(p.moisture_status ?? 0);
+  return [...plants].sort((a, b) => urgency(a) - urgency(b));
+}
+
+/* ════════════════════════════════════════
+   Render
+═══════════════════════════════════════ */
+function render(plants) {
+  renderSummary(plants);
+  renderGrid(plants);
+}
+
+function renderSummary(plants) {
+  const bar = document.getElementById('summary-bar');
+  if (!plants.length) { bar.style.display = 'none'; return; }
+
+  const critical = plants.filter(p => (p.moisture_status ?? 0) === 1).length;
+  const warn     = plants.filter(p => (p.moisture_status ?? 0) === 2).length;
+  const ok       = plants.filter(p => (p.moisture_status ?? 0) === 3).length;
+
+  bar.style.display = 'flex';
+  bar.innerHTML = `
+    <div class="chip">${plants.length} plant${plants.length > 1 ? 's' : ''}</div>
+    ${critical ? `<div class="chip alert">💧 ${critical} need${critical > 1 ? '' : 's'} water now</div>` : ''}
+    ${warn     ? `<div class="chip warn">⚠️ ${warn} water soon</div>` : ''}
+    ${ok       ? `<div class="chip ok">✅ ${ok} happy</div>` : ''}
+  `;
+}
+
+function renderGrid(plants) {
+  const grid = document.getElementById('plants-grid');
+
+  if (!plants.length) {
+    grid.innerHTML = `<div class="empty-state"><span>🪴</span>No plants found.<br/>Add some in the FYTA app first.</div>`;
+    return;
+  }
+
+  grid.innerHTML = plants.map(plantCard).join('');
+
+  grid.querySelectorAll('img[data-src]').forEach(img => {
+    img.src = img.dataset.src;
+    img.onerror = () => {
+      const w = img.closest('.card-photo');
+      if (w) w.innerHTML = `<span class="photo-placeholder">🪴</span>`;
+    };
+  });
+}
+
+function plantCard(p) {
+  const ms  = p.moisture_status  ?? 0;
+  const ls  = p.light_status     ?? 0;
+  const ts  = p.temperature_status ?? 0;
+  const ss  = p.salinity_status  ?? p.nutrients_status ?? 0;
+  const msi = si(ms);
+
+  const thumbProxy = p.thumb_path
+    ? p.thumb_path.replace('https://api.prod.fyta-app.de', '/img-proxy')
+    : '';
+  const photoUrl = thumbProxy || p.plant_thumb_path || '';
+  const photoHtml = photoUrl
+    ? `<img data-src="${photoUrl}" alt="${p.nickname ?? ''}" />`
+    : `<span class="photo-placeholder">🪴</span>`;
+
+  const badge = ms === 1 ? `<div class="badge badge-critical">💧 Water Now!</div>`
+    : ms === 2 ? `<div class="badge badge-warn">💧 Water Soon</div>`
+    : ms === 5 ? `<div class="badge badge-wet">🌊 Overwatered</div>`
+    : ms === 4 ? `<div class="badge badge-wet">🚿 Slightly Wet</div>`
+    : ms === 3 ? `<div class="badge badge-ok">✓ Happy</div>`
+    : '';
+
+  const cardClass = ms === 1 ? 'plant-card critical'
+    : ms === 2 ? 'plant-card needs-water'
+    : 'plant-card';
+
+  const gardenHtml = p._garden ? `<div class="garden-tag">📍 ${p._garden}</div>` : '';
+
+  const sensor    = p.sensor ?? {};
+
+  const measDate  = sensor.received_data_at || p.received_data_at;
+  let ageHtml = '';
+  if (measDate) {
+    const diffH = (Date.now() - new Date(measDate)) / 36e5;
+    const label = diffH < 1 ? 'Just now'
+      : diffH < 24 ? `${Math.round(diffH)}h ago`
+      : `${Math.floor(diffH / 24)}d ago`;
+    ageHtml = `<span>🕐 ${label}</span>`;
+  }
+
+  const batHtml = sensor.is_battery_low
+    ? `<span>🪫 Low battery</span>`
+    : '';
+
+  const speciesName = p.scientific_name || p.common_name || '';
+  const species = (p.nickname && speciesName && p.nickname !== speciesName) ? speciesName : '';
+
+  return `
+<div class="${cardClass}">
+  <div class="card-photo">
+    ${photoHtml}${badge}${gardenHtml}
+  </div>
+  <div class="card-body">
+    <h2>${p.nickname ?? p.scientific_name ?? p.common_name ?? 'Unknown'}</h2>
+    <div class="card-species">${species}</div>
+
+    <div class="moisture-hero">
+      <div class="m-icon ${msi.color}">${MOISTURE_EMOJI[ms] ?? '💧'}</div>
+      <div class="m-info">
+        <div class="m-label">Soil Moisture</div>
+        <div class="m-value ${msi.color}">${MOISTURE_HEADLINE[ms] ?? msi.label}</div>
+        <div class="m-desc">${MOISTURE_DESC[ms] ?? ''}</div>
+      </div>
+    </div>
+
+    <div class="sensors">
+      ${sensorRow('☀️', ls)}
+      ${sensorRow('🌡️', ts)}
+      ${sensorRow('🧪', ss)}
+    </div>
+  </div>
+  ${(ageHtml || batHtml) ? `<div class="card-footer">${ageHtml}${batHtml}</div>` : ''}
+</div>`;
+}
+
+function sensorRow(icon, code) {
+  const s = si(code);
+  return `
+<div class="sensor-row">
+  <span class="s-icon">${icon}</span>
+  <div class="bar-track"><div class="bar-fill ${s.color}" style="width:${s.bar}%"></div></div>
+  <span class="s-label ${s.color}">${s.label}</span>
+</div>`;
+}
+
+/* ════════════════════════════════════════
+   Timers
+═══════════════════════════════════════ */
+let refreshTimer, countdownTimer, nextRefresh;
+
+function startTimers() {
+  clearInterval(refreshTimer);
+  clearInterval(countdownTimer);
+  nextRefresh    = Date.now() + REFRESH_MS;
+  refreshTimer   = setInterval(autoRefresh, REFRESH_MS);
+  countdownTimer = setInterval(tickCountdown, 15000);
+  tickCountdown();
+}
+
+function tickCountdown() {
+  const mins = Math.ceil(Math.max(0, nextRefresh - Date.now()) / 60000);
+  document.getElementById('countdown').textContent = `Refreshes in ${mins}m`;
+}
+
+async function autoRefresh() {
+  nextRefresh = Date.now() + REFRESH_MS;
+  tickCountdown();
+  await loadPlants().catch(console.warn);
+}
+
+async function manualRefresh() {
+  const btn  = document.getElementById('refresh-btn');
+  const icon = document.getElementById('refresh-icon');
+  btn.disabled = true;
+  icon.classList.add('spin');
+  try { await loadPlants(); startTimers(); }
+  finally { btn.disabled = false; icon.classList.remove('spin'); }
+}
+
+/* ════════════════════════════════════════
+   UI helpers
+═══════════════════════════════════════ */
+function showLoading(on) {
+  document.getElementById('loading').style.display = on ? 'flex' : 'none';
+  if (on) document.getElementById('plants-grid').innerHTML = '';
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  if (!msg) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = `<strong>Could not load plants.</strong><br/>${msg}`;
+  showLoading(false);
+}
+
+/* Boot */
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

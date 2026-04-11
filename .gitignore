@@ -1,0 +1,5 @@
+# Local config — contains your API token, never commit this
+config.js
+
+# macOS
+.DS_Store

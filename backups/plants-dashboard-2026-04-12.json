@@ -1,0 +1,61 @@
+{
+  "views": [
+    {
+      "title": "Pflanzen",
+      "path": "default",
+      "type": "masonry",
+      "cards": [
+        {
+          "type": "custom:auto-entities",
+          "card": {
+            "type": "grid",
+            "columns": 3,
+            "square": false
+          },
+          "card_param": "cards",
+          "filter": {
+            "include": [
+              {
+                "entity_id": "sensor.*_moisture",
+                "options": {
+                  "type": "vertical-stack",
+                  "cards": [
+                    {
+                      "type": "custom:mushroom-template-card",
+                      "entity": "this.entity_id",
+                      "primary": "{%- set parts = state_attr(entity, 'friendly_name').split(' ') -%}{{ parts[1:-1] | join(' ') }}",
+                      "secondary": "{%- set prefix = entity.split('.')[1].split('_moisture')[0] -%}{%- set sci = states('sensor.' + prefix + '_scientific_name') -%}{%- set ms = states('sensor.' + prefix + '_moisture_state') -%}{%- set w = {'too_low':'Braucht Wasser','low':'Bald gießen','perfect':'Gut versorgt','high':'Leicht feucht','too_high':'Überwässert'} -%}{{ w[ms] | default('–') }} · {{ sci }}",
+                      "icon": "mdi:leaf",
+                      "icon_color": "{%- set prefix = entity.split('.')[1].split('_moisture')[0] -%}{%- set ms = states('sensor.' + prefix + '_moisture_state') -%}{% if ms == 'too_low' %}red{% elif ms == 'low' %}orange{% elif ms in ['high','too_high'] %}blue{% else %}green{% endif %}",
+                      "badge_icon": "{%- set prefix = entity.split('.')[1].split('_moisture')[0] -%}{%- set ms = states('sensor.' + prefix + '_moisture_state') -%}{% if ms == 'too_low' %}mdi:water-off{% elif ms == 'low' %}mdi:water-minus{% elif ms == 'too_high' %}mdi:water-plus{% elif ms == 'high' %}mdi:water-alert{% else %}mdi:water-check{% endif %}",
+                      "badge_color": "{%- set prefix = entity.split('.')[1].split('_moisture')[0] -%}{%- set ms = states('sensor.' + prefix + '_moisture_state') -%}{% if ms == 'too_low' %}red{% elif ms == 'low' %}orange{% elif ms in ['high','too_high'] %}blue{% else %}green{% endif %}",
+                      "tap_action": {
+                        "action": "more-info"
+                      }
+                    },
+                    {
+                      "type": "sensor",
+                      "entity": "this.entity_id",
+                      "name": "Feuchtigkeit (7 Tage)",
+                      "graph": "line",
+                      "hours_to_show": 168,
+                      "limits": {
+                        "min": 0,
+                        "max": 100
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "sort": {
+            "method": "state",
+            "numeric": true,
+            "reverse": false
+          }
+        }
+      ]
+    }
+  ]
+}

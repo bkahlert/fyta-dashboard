@@ -3,6 +3,8 @@
 **Date:** 2026-04-11
 **Status:** Approved
 
+> **Note (2026-04-18):** Token configuration has changed. `VITE_API_TOKEN` references below are superseded by `FYTA_API_TOKEN`. See `docs/superpowers/specs/2026-04-18-token-consolidation-design.md`.
+
 ## Goal
 
 Rewrite the single-file vanilla JS dashboard as a Vite + Vue 3 + Tailwind CSS + DaisyUI application. Simultaneously introduce a viewport-fill grid layout that shows all plants on screen at once with no scrolling, scaling cards dynamically to fill all available space.

@@ -17,6 +17,11 @@ export default defineConfig(({ mode }) => {
           target: 'https://web.fyta.de',
           changeOrigin: true,
           secure: true,
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
+              proxyReq.setHeader('Authorization', `Bearer ${env.FYTA_API_TOKEN}`)
+            })
+          },
         },
         '/img-proxy': {
           target: 'https://api.prod.fyta-app.de',
@@ -25,7 +30,7 @@ export default defineConfig(({ mode }) => {
           rewrite: path => path.replace(/^\/img-proxy/, ''),
           configure: (proxy) => {
             proxy.on('proxyReq', (proxyReq) => {
-              proxyReq.setHeader('Authorization', `Bearer ${env.VITE_API_TOKEN}`)
+              proxyReq.setHeader('Authorization', `Bearer ${env.FYTA_API_TOKEN}`)
             })
           },
         },

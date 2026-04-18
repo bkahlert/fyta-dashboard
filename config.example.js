@@ -3,7 +3,7 @@
 // ────────────────────────────────────────────────
 // Create a .env.local file in the project root with:
 //
-//   VITE_API_TOKEN=your-token-here
+//   FYTA_API_TOKEN=your-token-here
 //
 // Get your token at: https://web.fyta.de → "API Token" tab
 //

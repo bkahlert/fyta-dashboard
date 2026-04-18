@@ -32,7 +32,6 @@ export function usePlants() {
     '/api/user-plant',
     {
       headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
         Accept: 'application/json',
       },
     }

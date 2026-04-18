@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Note (2026-04-18):** Token configuration has changed. `VITE_API_TOKEN` references in this plan are superseded by `FYTA_API_TOKEN`. See `docs/superpowers/specs/2026-04-18-token-consolidation-design.md`.
+
 **Goal:** Rewrite the single-file vanilla JS dashboard as a Vite + Vue 3 + Tailwind CSS + DaisyUI app with a JS-optimal viewport-fill grid that shows all plants without scrolling.
 
 **Architecture:** Vue 3 `<script setup>` components wired in App.vue; VueUse composables replace all manual event listeners, fetch wrappers, and timers; a pure function `calcGrid(n, w, h)` finds the column count that maximises card area for N plants in the available viewport space.

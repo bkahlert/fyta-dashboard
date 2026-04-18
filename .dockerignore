@@ -1,0 +1,9 @@
+.git
+.idea
+.superpowers
+node_modules
+dist
+docs
+*.md
+.env*
+config.js

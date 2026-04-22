@@ -1,219 +1,100 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue'
+import { BatteryLow, WifiOff } from 'lucide-vue-next'
+import { computed } from 'vue'
 
-import type {Plant, SensorStatus} from '../types/plant'
+import type { Plant } from '../types/plant'
+
+import AttentionBadge from './AttentionBadge.vue'
+import PlantPhoto from './PlantPhoto.vue'
+import SensorStatus from './SensorStatus.vue'
 
 const props = defineProps<{
-  cardHeight?: number
   plant: Plant
 }>()
 
-const cardHeightPx = computed(() => props.cardHeight ?? 160)
-const photoFailed = ref(false)
-
-// ── Content tier ──────────────────────────────────────────────
-type Tier = 'compact' | 'full' | 'medium' | 'micro'
-
-const tier = computed<Tier>(() => {
-  const h = cardHeightPx.value
-  if (h >= 180) return 'full'
-  if (h >= 120) return 'medium'
-  if (h >= 80) return 'compact'
-  return 'micro'
-})
-
-const photoHeight = computed(() => {
-  const h = cardHeightPx.value
-  if (h < 80) return 0
-  if (h < 120) return Math.round(h * 0.2)
-  return Math.round(h * 0.35)
-})
-
-const bodyClass = computed(() => {
-  if (tier.value === 'micro') return 'p-1 gap-0.5'
-  if (tier.value === 'compact') return 'p-1.5 gap-0.5'
-  return 'p-2 gap-1'
-})
-
-// ── Sensor data ────────────────────────────────────────────────
-const SENSOR_BARS: Record<SensorStatus, number> = {
-  0: 0,
-  1: 8,
-  2: 28,
-  3: 70,
-  4: 87,
-  5: 98,
-}
-
-type SensorType = 'light' | 'moisture' | 'salinity' | 'temp'
-
-const SENSOR_LABELS: Record<SensorType, Record<SensorStatus, string>> = {
-  light: {0: '–', 1: 'Dunkel', 2: 'Wenig', 3: 'OK', 4: 'Hell', 5: 'Grell'},
-  moisture: {0: '–', 1: 'Trocken', 2: 'Wenig', 3: 'OK', 4: 'Feucht', 5: 'Nass'},
-  salinity: {0: '–', 1: 'Mangel', 2: 'Wenig', 3: 'OK', 4: 'Hoch', 5: 'Zuviel'},
-  temp: {0: '–', 1: 'Kalt', 2: 'Kühl', 3: 'OK', 4: 'Warm', 5: 'Heiß'},
-}
-
-const MOISTURE_HEADLINE: Record<SensorStatus, string> = {
-  0: 'Kein Sensor',
-  1: 'Braucht Wasser',
-  2: 'Bald gießen',
-  3: 'Gut versorgt',
-  4: 'Leicht feucht',
-  5: 'Überwässert',
-}
-
-const MOISTURE_EMOJI: Record<SensorStatus, string> = {
-  0: '🪴',
-  1: '💧',
-  2: '💧',
-  3: '✅',
-  4: '🚿',
-  5: '🌊',
-}
-
-const ms = computed<SensorStatus>(() => (props.plant.moisture_status ?? 0))
-
-type SensorRow = [icon: string, status: SensorStatus, type: SensorType]
-
-const sensors = computed<SensorRow[]>(() => [
-  ['☀️', (props.plant.light_status ?? 0), 'light'],
-  ['🌡️', (props.plant.temperature_status ?? 0), 'temp'],
-  [
-    '🧪',
-    (props.plant.salinity_status ?? props.plant.nutrients_status ?? 0),
-    'salinity',
-  ],
-])
-
-// ── Photo ─────────────────────────────────────────────────────
-const photoUrl = computed(() => {
-  const thumb = props.plant.thumb_path
-      ? props.plant.thumb_path.replace('https://api.prod.fyta-app.de', '/img-proxy')
-      : ''
-  return thumb || (props.plant.plant_thumb_path ?? '')
-})
-
-// ── CSS helpers ───────────────────────────────────────────────
-function statusColorClass(status: SensorStatus, variant: 'bg' | 'text'): string {
-  const prefix = variant === 'text' ? 'text' : 'bg'
-  if (status === 1) return `${prefix}-error`
-  if (status === 2 || status === 4) return `${prefix}-warning`
-  if (status === 3) return `${prefix}-success`
-  if (status === 5) return `${prefix}-info`
-  return variant === 'text' ? 'text-base-content/40' : 'bg-base-content/20'
-}
-
 const cardBorderClass = computed(() => {
-  if (ms.value === 1) return 'border-2 border-error bg-base-200'
-  if (ms.value === 2) return 'border-2 border-warning bg-base-200'
+  if (props.plant.attentionLevel === 'now') return 'border-2 border-error bg-base-200'
+  if (props.plant.attentionLevel === 'soon') return 'border-2 border-warning bg-base-200'
   return 'border-2 border-base-300 bg-base-200'
 })
 
-const nameSizeClass = computed(() => (tier.value === 'micro' ? 'text-xs' : 'text-sm'))
+// ── Wifi status ───────────────────────────────────────────────
+// 'lost': lost connection to all hubs  →  error  (red)
+// 'error': error connecting / lost within time range  →  warning (yellow)
+const WIFI_BADGE_CLASS: Record<'error' | 'lost', string> = {
+  lost: 'badge-error',
+  error: 'badge-warning',
+}
 
-const moistureColorClass = computed(() => statusColorClass(ms.value, 'text'))
-
-const badgeText = computed(() => {
-  if (ms.value === 1) return '💧 Jetzt'
-  if (ms.value === 2) return '💧 Bald'
-  return ''
-})
-
-const badgeClass = computed(() => (ms.value === 1 ? 'badge-error' : 'badge-warning'))
-
-const barColorClass = (status: SensorStatus) => statusColorClass(status, 'bg')
-const labelColorClass = (status: SensorStatus) => statusColorClass(status, 'text')
+// ── Sensor meta ───────────────────────────────────────────────
+function timeAgo(dateStr: null | string | undefined): string {
+  if (!dateStr) return ''
+  const date = new Date(dateStr.replace(' ', 'T'))
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+  if (seconds < 60) return 'gerade eben'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `vor ${String(minutes)} Min`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `vor ${String(hours)} Std`
+  return `vor ${String(Math.floor(hours / 24))} T`
+}
 </script>
 
 <template>
   <div class="card overflow-hidden h-full" :class="cardBorderClass">
-    <!-- Photo — hidden on micro tier, small strip on compact -->
-    <figure
-        v-if="photoHeight > 0"
-        class="relative overflow-hidden shrink-0 bg-base-300"
-        :style="{ height: photoHeight + 'px' }"
+    <PlantPhoto
+      :thumb-path="plant.thumb_path"
+      :plant-thumb-path="plant.plant_thumb_path"
+      :origin-path="plant.origin_path"
+      :alt="plant.nickname ?? undefined"
     >
-      <img
-          v-if="photoUrl && !photoFailed"
-          :src="photoUrl"
-          :alt="plant.nickname ?? ''"
-          class="w-full h-full object-cover"
-          @error="photoFailed = true"
-      />
-      <div
-          v-else
-          class="w-full h-full flex items-center justify-center text-4xl opacity-20 select-none"
-      >
-        🪴
+      <!-- Top-left problem badges -->
+      <div class="absolute top-1 left-1 flex gap-0.5">
+        <span
+          v-if="plant.wifi_status === 'lost' || plant.wifi_status === 'error'"
+          class="badge badge-sm gap-0.5"
+          :class="WIFI_BADGE_CLASS[plant.wifi_status]"
+          ><WifiOff class="size-2.5"
+        /></span>
+        <span v-if="plant.sensorBatteryLow" class="badge badge-sm badge-warning gap-0.5"
+          ><BatteryLow class="size-2.5"
+        /></span>
       </div>
-      <span v-if="badgeText" class="badge badge-xs absolute top-1 right-1" :class="badgeClass">{{
-          badgeText
-        }}</span>
-    </figure>
+      <AttentionBadge :level="plant.attentionLevel" class="absolute top-1 right-1" />
+      <!-- Name + species overlay -->
+      <div
+        class="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-base-200 via-base-200 to-transparent flex flex-col justify-end px-2 pb-1.5"
+      >
+        <h2 class="font-bold truncate leading-tight text-sm text-white">
+          {{ plant.nickname ?? plant.scientific_name ?? 'Unbekannt' }}
+        </h2>
+        <p class="text-xs italic truncate leading-tight text-white/60">
+          {{ plant.scientific_name ?? plant.common_name ?? '' }}
+        </p>
+      </div>
+    </PlantPhoto>
 
     <!-- Body -->
-    <div class="card-body min-h-0 flex flex-col overflow-hidden" :class="bodyClass">
-      <!-- Name -->
-      <h2 class="font-bold truncate leading-tight shrink-0" :class="nameSizeClass">
-        {{ plant.nickname ?? plant.scientific_name ?? 'Unbekannt' }}
-      </h2>
-
-      <!-- Species — full and medium tiers only -->
-      <p
-          v-if="tier === 'full' || tier === 'medium'"
-          class="text-xs opacity-50 italic truncate leading-tight shrink-0"
-      >
-        {{ plant.scientific_name ?? plant.common_name ?? '' }}
-      </p>
-
-      <!-- Moisture status -->
-      <div class="flex items-center gap-1 min-w-0 shrink-0">
-        <span class="shrink-0 leading-none" :class="tier === 'micro' ? 'text-xs' : 'text-sm'">
-          {{ MOISTURE_EMOJI[ms] ?? '💧' }}
-        </span>
-        <span class="font-bold truncate text-xs" :class="moistureColorClass">
-          {{ MOISTURE_HEADLINE[ms] }}
-        </span>
-      </div>
-
-      <!-- Spacer: fills slack, collapses to 0 when space is tight -->
-      <div class="flex-1 min-h-0"></div>
-
-      <!-- Sensor bars
-           full/medium : icon + bar + label  (full rows)
-           compact     : bar only            (1px, no icon, no label)
-           micro       : hidden entirely
-      -->
-      <div
-          v-if="tier !== 'micro'"
-          class="flex flex-col shrink-0"
-          :class="tier === 'compact' ? 'gap-px' : 'gap-0.5'"
-      >
-        <div v-for="[icon, code, type] in sensors" :key="icon" class="flex items-center gap-1">
-          <span v-if="tier !== 'compact'" class="text-xs w-3 shrink-0 leading-none">{{
-              icon
-            }}</span>
-          <div
-              class="flex-1 rounded-full bg-base-300/60 overflow-hidden"
-              :class="tier === 'compact' ? 'h-px' : 'h-0.5'"
-          >
-            <div
-                class="h-full rounded-full transition-all duration-700"
-                :class="barColorClass(code)"
-                :style="{ width: SENSOR_BARS[code] + '%' }"
-            ></div>
-          </div>
-          <span
-              v-if="tier !== 'compact'"
-              class="text-xs shrink-0 whitespace-nowrap text-right"
-              :class="labelColorClass(code)"
-          >
-            {{ SENSOR_LABELS[type][code] ?? '' }}
-          </span>
-        </div>
+    <div class="card-body min-h-0 overflow-hidden p-2">
+      <div class="flex flex-wrap items-center gap-2 min-w-0">
+        <SensorStatus
+          type="moisture"
+          :status="plant.moisture_status ?? 'no_data'"
+          class="min-w-0"
+        />
+        <SensorStatus type="light" :status="plant.light_status ?? 'no_data'" class="min-w-0" />
+        <SensorStatus type="temp" :status="plant.temperature_status ?? 'no_data'" class="min-w-0" />
+        <SensorStatus
+          type="salinity"
+          :status="plant.salinity_status ?? plant.nutrients_status ?? 'no_data'"
+          class="min-w-0"
+        />
+        <span
+          class="basis-full text-right text-[10px]"
+          :class="plant.sensorStatus === 'error' ? 'text-error' : 'text-base-content/40'"
+          >{{ plant.sensorLastSeen ? timeAgo(plant.sensorLastSeen) : '' }}</span
+        >
       </div>
     </div>
   </div>
 </template>
-

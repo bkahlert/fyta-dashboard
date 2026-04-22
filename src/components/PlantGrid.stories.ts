@@ -1,53 +1,52 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import type {Meta, StoryObj} from '@storybook/vue3-vite'
 
-import type { Plant, SensorStatus } from '../types/plant'
+import type {MeasurementStatus} from '../types/plant'
 
+import {createPlant} from '../types/plant'
 import PlantGrid from './PlantGrid.vue'
 
 const meta: Meta<typeof PlantGrid> = {
-  component: PlantGrid,
-  decorators: [
-    () => ({
-      template: '<div style="height:600px;display:flex;flex-direction:column"><story /></div>',
-    }),
-  ],
+    component: PlantGrid,
 }
 
 export default meta
 type Story = StoryObj<typeof PlantGrid>
 
-const makePlant = (id: number, moisture_status: SensorStatus, nickname: string): Plant => ({
-  id,
-  nickname,
-  scientific_name: 'Monstera deliciosa',
-  moisture_status,
-  light_status: 3,
-  temperature_status: 3,
-  salinity_status: 3,
-  thumb_path: '',
-})
+const makePlant = (id: number, moisture_status: MeasurementStatus, nickname: string) =>
+  createPlant({ id, nickname, scientific_name: 'Monstera deliciosa', moisture_status, light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect', thumb_path: '' })
 
-const FEW: Plant[] = [
-  makePlant(1, 1, 'Fikus'),
-  makePlant(2, 2, 'Monstera'),
-  makePlant(3, 3, 'Efeutute'),
+const FEW = [
+    makePlant(1, 'too_low', 'Fikus'),
+    makePlant(2, 'low',     'Monstera'),
+    makePlant(3, 'perfect', 'Efeutute'),
 ]
 
-const MANY: Plant[] = [
-  makePlant(1, 1, 'Fikus'),
-  makePlant(2, 2, 'Monstera'),
-  makePlant(3, 3, 'Efeutute'),
-  makePlant(4, 3, 'Bogenhanf'),
-  makePlant(5, 4, 'Aloe Vera'),
-  makePlant(6, 3, 'Geldbaum'),
-  makePlant(7, 2, 'Orchidee'),
-  makePlant(8, 3, 'Palme'),
-  makePlant(9, 1, 'Kaktus'),
-  makePlant(10, 3, 'Farn'),
-  makePlant(11, 3, 'Tillandsie'),
-  makePlant(12, 5, 'Basilikum'),
+const MANY = [
+    makePlant(1,  'too_low', 'Fikus'),
+    makePlant(2,  'low',     'Monstera'),
+    makePlant(3,  'perfect', 'Efeutute'),
+    makePlant(4,  'perfect', 'Bogenhanf'),
+    makePlant(5,  'high',    'Aloe Vera'),
+    makePlant(6,  'perfect', 'Geldbaum'),
+    makePlant(7,  'low',     'Orchidee'),
+    makePlant(8,  'perfect', 'Palme'),
+    makePlant(9,  'too_low', 'Kaktus'),
+    makePlant(10, 'perfect', 'Farn'),
+    makePlant(11, 'perfect', 'Tillandsie'),
+    makePlant(12, 'too_high','Basilikum'),
+    makePlant(13, 'perfect', 'Zitronenbaum'),
+    makePlant(14, 'low',     'Bambus'),
+    makePlant(15, 'perfect', 'Yucca'),
+    makePlant(16, 'too_low', 'Sukkulente'),
+    makePlant(17, 'perfect', 'Drachenbaum'),
+    makePlant(18, 'high',    'Bromelien'),
+    makePlant(19, 'perfect', 'Chrysantheme'),
+    makePlant(20, 'low',     'Rosmarin'),
+    makePlant(21, 'perfect', 'Minze'),
+    makePlant(22, 'too_low', 'Basilikum 2'),
+    makePlant(23, 'perfect', 'Lavendel'),
 ]
 
-export const Empty: Story = { args: { plants: [] } }
-export const ThreePlants: Story = { args: { plants: FEW } }
-export const TwelvePlants: Story = { args: { plants: MANY } }
+export const Empty: Story = {args: {plants: []}}
+export const ThreePlants: Story = {args: {plants: FEW}}
+export const TwentyThreePlants: Story = {args: {plants: MANY}}

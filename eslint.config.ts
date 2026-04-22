@@ -1,6 +1,5 @@
 import eslint from '@eslint/js'
 import prettier from 'eslint-config-prettier'
-import perfectionist from 'eslint-plugin-perfectionist'
 import { configs as sonarjsConfigs } from 'eslint-plugin-sonarjs'
 import unicorn from 'eslint-plugin-unicorn'
 import pluginVue from 'eslint-plugin-vue'
@@ -57,7 +56,6 @@ export default tseslint.config(
   // sonarjsConfigs.recommended is typed as Linter.FlatConfig; cast to satisfy tseslint.config()
   sonarjsConfigs.recommended,
   unicorn.configs.recommended,
-  perfectionist.configs['recommended-natural'],
 
   // Prettier must be last — disables ESLint formatting rules
   prettier,
@@ -73,8 +71,6 @@ export default tseslint.config(
   // Project-level overrides
   {
     rules: {
-      // perfectionist: object property order is semantic in this codebase; don't enforce alphabetical
-      'perfectionist/sort-objects': 'off',
       // unicorn: filename conventions — components are PascalCase, composables/configs are camelCase
       'unicorn/filename-case': [
         'error',

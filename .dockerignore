@@ -9,3 +9,5 @@ docs
 config.js
 home-assistant/
 deploy/
+!deploy/server.py
+!deploy/entrypoint.sh

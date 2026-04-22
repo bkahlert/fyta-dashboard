@@ -9,3 +9,8 @@ Vue 3 + Vite app that displays FYTA plant sensor data. Stack: Vue 3, Vite, Tailw
 - Entry: `src/main.js` → `src/App.vue`
 
 The Home Assistant Lovelace dashboard work is parked in [`home-assistant/`](home-assistant/CLAUDE.md).
+
+## API
+
+FYTA API reference (field semantics, status codes, timestamp format): [`docs/fyta-api.md`](docs/fyta-api.md).
+Key invariant: use `hubs_with_lost_connection` (top-level in `/api/user-plant`) for hub connectivity — not `hub.status` per plant, which reflects per-sensor data freshness.

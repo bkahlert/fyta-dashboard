@@ -1,21 +1,57 @@
-export interface FytaApiResponse {
-  gardens?: { name: string; plants?: Plant[] }[]
-  plants?: Plant[]
+import type { HubStatusValue, MeasurementStatusValue, SensorStatusValue, WifiStatusValue } from '../api/schemas'
+
+export type AttentionLevel = 'now' | 'ok' | 'soon'
+export type MeasurementStatus = MeasurementStatusValue
+
+const ATTENTION: Record<MeasurementStatus, AttentionLevel> = {
+  no_data: 'ok', too_low: 'now', low: 'soon', perfect: 'ok', high: 'soon', too_high: 'now',
 }
+const ATTENTION_RANK: Record<AttentionLevel, number> = { now: 0, soon: 1, ok: 2 }
 
 export interface Plant {
-  _garden?: string
-  common_name?: string
+  attentionLevel: AttentionLevel
+  attentionRank: number
+  common_name?: null | string
+  hubId?: string
+  hubLastReached?: null | string
+  hubLastSync?: null | string
+  hubName?: string
+  hubStatus?: HubStatusValue
   id: number | string
-  light_status?: SensorStatus
-  moisture_status?: SensorStatus
-  nickname?: string
-  nutrients_status?: SensorStatus
-  plant_thumb_path?: string
-  salinity_status?: SensorStatus
-  scientific_name?: string
-  temperature_status?: SensorStatus
-  thumb_path?: string
+  light_status?: MeasurementStatus | null
+  moisture_status?: MeasurementStatus | null
+  nickname?: null | string
+  nutrients_status?: MeasurementStatus | null
+  origin_path?: null | string
+  plant_thumb_path?: null | string
+  salinity_status?: MeasurementStatus | null
+  scientific_name?: null | string
+  sensorBatteryLow?: boolean
+  sensorLastSeen?: null | string
+  sensorStatus?: SensorStatusValue
+  temperature_status?: MeasurementStatus | null
+  thumb_path?: null | string
+  wifi_status?: WifiStatusValue
 }
 
-export type SensorStatus = 0 | 1 | 2 | 3 | 4 | 5
+type PlantInput = Omit<Plant, 'attentionLevel' | 'attentionRank'> & {
+  hub?: null | { hub_id?: string; hub_name?: string; reached_hub_at?: null | string; received_data_at?: null | string; status?: HubStatusValue }
+  sensor?: null | { is_battery_low?: boolean; received_data_at?: null | string; status?: SensorStatusValue }
+}
+
+export function createPlant(data: PlantInput): Plant {
+  const attentionLevel = ATTENTION[data.moisture_status ?? 'no_data']
+  return {
+    ...data,
+    attentionLevel,
+    attentionRank: ATTENTION_RANK[attentionLevel],
+    hubId: data.hub?.hub_id ?? undefined,
+    hubLastReached: data.hub?.reached_hub_at ?? undefined,
+    hubLastSync: data.hub?.received_data_at ?? undefined,
+    hubName: data.hub?.hub_name ?? undefined,
+    hubStatus: data.hub?.status ?? undefined,
+    sensorBatteryLow: data.sensor?.is_battery_low ?? undefined,
+    sensorLastSeen: data.sensor?.received_data_at ?? undefined,
+    sensorStatus: data.sensor?.status ?? undefined,
+  }
+}

@@ -1,0 +1,816 @@
+views:
+  - title: Pflanzen
+    path: default
+    type: panel
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: custom:layout-card
+          layout_type: custom:grid-layout
+          layout:
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))
+            grid-gap: 8px
+        card_param: cards
+        filter:
+          include:
+            - entity_id: sensor.*_moisture_state
+              state: too_low
+              options:
+                type: vertical-stack
+                cards:
+                  - type: custom:button-card
+                    entity: this.entity_id
+                    aspect_ratio: 3/2
+                    show_name: false
+                    show_icon: false
+                    show_state: false
+                    tap_action:
+                      action: more-info
+                    styles:
+                      card:
+                        - background-image: |-
+                            [[[
+                              if (!entity || !entity.attributes) return 'none';
+                              var dn = entity.attributes.friendly_name.split(' ').slice(0,-1).join('_').toLowerCase()
+                                .split('ü').join('u').split('ö').join('o').split('ä').join('a').split('ß').join('ss');
+                              var img = states['image.' + dn + '_benutzerbild'];
+                              return img ? 'url(' + img.attributes.entity_picture + ')' : 'none';
+                            ]]]
+                        - background-size: cover
+                        - background-position: center
+                        - padding: "0"
+                  - type: custom:mushroom-template-card
+                    entity: this.entity_id
+                    primary: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      device_attr(device_id(entity), 'name') }}
+                    secondary: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      states('sensor.' + p + '_scientific_name') }}
+                    icon: mdi:leaf
+                    picture: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      state_attr('image.' + p, 'entity_picture') }}
+                    icon_color: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{{
+                      '219,68,55' if ms == 'too_low' else '255,166,0' if ms ==
+                      'low' else '3,155,229' if ms == 'too_high' else
+                      '67,160,71' }}
+                    badge_icon: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{%
+                      if ms == 'too_low' %}mdi:water-off{% elif ms == 'low'
+                      %}mdi:water-minus{% elif ms == 'too_high'
+                      %}mdi:water-plus{% elif ms == 'high' %}mdi:water-alert{%
+                      else %}mdi:water-check{% endif %}
+                    badge_color: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{{
+                      '219,68,55' if ms == 'too_low' else '255,166,0' if ms ==
+                      'low' else '3,155,229' if ms == 'too_high' else
+                      '67,160,71' }}
+                  - type: history-graph
+                    entities:
+                      - entity: this.entity_id
+                    hours_to_show: 336
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:thermometer
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p +
+                          '_temperature_state') -%}{{ '219,68,55' if s ==
+                          'too_low' else '255,166,0' if s == 'low' else
+                          '3,155,229' if s == 'too_high' else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p +
+                          '_temperature_state') -%}{{ '' if s == 'perfect' else
+                          state_translated('sensor.' + p + '_temperature_state')
+                          }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:white-balance-sunny
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p + '_light_state')
+                          -%}{{ '219,68,55' if s == 'too_low' else '255,166,0'
+                          if s == 'low' else '3,155,229' if s == 'too_high' else
+                          '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p + '_light_state')
+                          -%}{{ '' if s == 'perfect' else
+                          state_translated('sensor.' + p + '_light_state') }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:sprout
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set ns = states('sensor.' + p +
+                          '_nutrients_state') -%}{{ '219,68,55' if ns ==
+                          'too_low' else '255,166,0' if ns == 'low' else
+                          '3,155,229' if ns == 'too_high' else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set fert = states('sensor.' + p +
+                          '_next_fertilization') -%}{%- set days =
+                          ((as_timestamp(fert) - as_timestamp(now())) / 86400) |
+                          int if fert not in ['unavailable','unknown','none','']
+                          else 999 -%}{{ '' if days > 14 else days | string +
+                          'd' }}
+                        tap_action:
+                          action: more-info
+                      - type: spacer
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:battery-alert
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0] -%}{{
+                          '219,68,55' if states('sensor.' + p + '_battery') |
+                          int(100) < 20 else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set pct = states('sensor.' + p + '_battery') |
+                          int(100) -%}{{ pct ~ '%' if pct < 20 else '' }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:update
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set bs = 'binary_sensor.' + p + '_update' -%}{{
+                          '3,155,229' if is_state(bs, 'on') else
+                          'var(--rgb-secondary-text-color)' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set bs = 'binary_sensor.' + p + '_update' -%}{{
+                          relative_time(states[bs].last_changed) if is_state(bs,
+                          'on') else '' }}
+                        tap_action:
+                          action: more-info
+            - entity_id: sensor.*_moisture_state
+              state: low
+              options:
+                type: vertical-stack
+                cards:
+                  - type: custom:button-card
+                    entity: this.entity_id
+                    aspect_ratio: 3/2
+                    show_name: false
+                    show_icon: false
+                    show_state: false
+                    tap_action:
+                      action: more-info
+                    styles:
+                      card:
+                        - background-image: |-
+                            [[[
+                              if (!entity || !entity.attributes) return 'none';
+                              var dn = entity.attributes.friendly_name.split(' ').slice(0,-1).join('_').toLowerCase()
+                                .split('ü').join('u').split('ö').join('o').split('ä').join('a').split('ß').join('ss');
+                              var img = states['image.' + dn + '_benutzerbild'];
+                              return img ? 'url(' + img.attributes.entity_picture + ')' : 'none';
+                            ]]]
+                        - background-size: cover
+                        - background-position: center
+                        - padding: "0"
+                  - type: custom:mushroom-template-card
+                    entity: this.entity_id
+                    primary: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      device_attr(device_id(entity), 'name') }}
+                    secondary: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      states('sensor.' + p + '_scientific_name') }}
+                    icon: mdi:leaf
+                    picture: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      state_attr('image.' + p, 'entity_picture') }}
+                    icon_color: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{{
+                      '219,68,55' if ms == 'too_low' else '255,166,0' if ms ==
+                      'low' else '3,155,229' if ms == 'too_high' else
+                      '67,160,71' }}
+                    badge_icon: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{%
+                      if ms == 'too_low' %}mdi:water-off{% elif ms == 'low'
+                      %}mdi:water-minus{% elif ms == 'too_high'
+                      %}mdi:water-plus{% elif ms == 'high' %}mdi:water-alert{%
+                      else %}mdi:water-check{% endif %}
+                    badge_color: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{{
+                      '219,68,55' if ms == 'too_low' else '255,166,0' if ms ==
+                      'low' else '3,155,229' if ms == 'too_high' else
+                      '67,160,71' }}
+                  - type: history-graph
+                    entities:
+                      - entity: this.entity_id
+                    hours_to_show: 336
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:thermometer
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p +
+                          '_temperature_state') -%}{{ '219,68,55' if s ==
+                          'too_low' else '255,166,0' if s == 'low' else
+                          '3,155,229' if s == 'too_high' else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p +
+                          '_temperature_state') -%}{{ '' if s == 'perfect' else
+                          state_translated('sensor.' + p + '_temperature_state')
+                          }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:white-balance-sunny
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p + '_light_state')
+                          -%}{{ '219,68,55' if s == 'too_low' else '255,166,0'
+                          if s == 'low' else '3,155,229' if s == 'too_high' else
+                          '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p + '_light_state')
+                          -%}{{ '' if s == 'perfect' else
+                          state_translated('sensor.' + p + '_light_state') }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:sprout
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set ns = states('sensor.' + p +
+                          '_nutrients_state') -%}{{ '219,68,55' if ns ==
+                          'too_low' else '255,166,0' if ns == 'low' else
+                          '3,155,229' if ns == 'too_high' else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set fert = states('sensor.' + p +
+                          '_next_fertilization') -%}{%- set days =
+                          ((as_timestamp(fert) - as_timestamp(now())) / 86400) |
+                          int if fert not in ['unavailable','unknown','none','']
+                          else 999 -%}{{ '' if days > 14 else days | string +
+                          'd' }}
+                        tap_action:
+                          action: more-info
+                      - type: spacer
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:battery-alert
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0] -%}{{
+                          '219,68,55' if states('sensor.' + p + '_battery') |
+                          int(100) < 20 else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set pct = states('sensor.' + p + '_battery') |
+                          int(100) -%}{{ pct ~ '%' if pct < 20 else '' }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:update
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set bs = 'binary_sensor.' + p + '_update' -%}{{
+                          '3,155,229' if is_state(bs, 'on') else
+                          'var(--rgb-secondary-text-color)' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set bs = 'binary_sensor.' + p + '_update' -%}{{
+                          relative_time(states[bs].last_changed) if is_state(bs,
+                          'on') else '' }}
+                        tap_action:
+                          action: more-info
+            - entity_id: sensor.*_moisture_state
+              state: too_high
+              options:
+                type: vertical-stack
+                cards:
+                  - type: custom:button-card
+                    entity: this.entity_id
+                    aspect_ratio: 3/2
+                    show_name: false
+                    show_icon: false
+                    show_state: false
+                    tap_action:
+                      action: more-info
+                    styles:
+                      card:
+                        - background-image: |-
+                            [[[
+                              if (!entity || !entity.attributes) return 'none';
+                              var dn = entity.attributes.friendly_name.split(' ').slice(0,-1).join('_').toLowerCase()
+                                .split('ü').join('u').split('ö').join('o').split('ä').join('a').split('ß').join('ss');
+                              var img = states['image.' + dn + '_benutzerbild'];
+                              return img ? 'url(' + img.attributes.entity_picture + ')' : 'none';
+                            ]]]
+                        - background-size: cover
+                        - background-position: center
+                        - padding: "0"
+                  - type: custom:mushroom-template-card
+                    entity: this.entity_id
+                    primary: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      device_attr(device_id(entity), 'name') }}
+                    secondary: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      states('sensor.' + p + '_scientific_name') }}
+                    icon: mdi:leaf
+                    picture: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      state_attr('image.' + p, 'entity_picture') }}
+                    icon_color: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{{
+                      '219,68,55' if ms == 'too_low' else '255,166,0' if ms ==
+                      'low' else '3,155,229' if ms == 'too_high' else
+                      '67,160,71' }}
+                    badge_icon: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{%
+                      if ms == 'too_low' %}mdi:water-off{% elif ms == 'low'
+                      %}mdi:water-minus{% elif ms == 'too_high'
+                      %}mdi:water-plus{% elif ms == 'high' %}mdi:water-alert{%
+                      else %}mdi:water-check{% endif %}
+                    badge_color: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{{
+                      '219,68,55' if ms == 'too_low' else '255,166,0' if ms ==
+                      'low' else '3,155,229' if ms == 'too_high' else
+                      '67,160,71' }}
+                  - type: history-graph
+                    entities:
+                      - entity: this.entity_id
+                    hours_to_show: 336
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:thermometer
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p +
+                          '_temperature_state') -%}{{ '219,68,55' if s ==
+                          'too_low' else '255,166,0' if s == 'low' else
+                          '3,155,229' if s == 'too_high' else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p +
+                          '_temperature_state') -%}{{ '' if s == 'perfect' else
+                          state_translated('sensor.' + p + '_temperature_state')
+                          }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:white-balance-sunny
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p + '_light_state')
+                          -%}{{ '219,68,55' if s == 'too_low' else '255,166,0'
+                          if s == 'low' else '3,155,229' if s == 'too_high' else
+                          '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p + '_light_state')
+                          -%}{{ '' if s == 'perfect' else
+                          state_translated('sensor.' + p + '_light_state') }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:sprout
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set ns = states('sensor.' + p +
+                          '_nutrients_state') -%}{{ '219,68,55' if ns ==
+                          'too_low' else '255,166,0' if ns == 'low' else
+                          '3,155,229' if ns == 'too_high' else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set fert = states('sensor.' + p +
+                          '_next_fertilization') -%}{%- set days =
+                          ((as_timestamp(fert) - as_timestamp(now())) / 86400) |
+                          int if fert not in ['unavailable','unknown','none','']
+                          else 999 -%}{{ '' if days > 14 else days | string +
+                          'd' }}
+                        tap_action:
+                          action: more-info
+                      - type: spacer
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:battery-alert
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0] -%}{{
+                          '219,68,55' if states('sensor.' + p + '_battery') |
+                          int(100) < 20 else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set pct = states('sensor.' + p + '_battery') |
+                          int(100) -%}{{ pct ~ '%' if pct < 20 else '' }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:update
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set bs = 'binary_sensor.' + p + '_update' -%}{{
+                          '3,155,229' if is_state(bs, 'on') else
+                          'var(--rgb-secondary-text-color)' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set bs = 'binary_sensor.' + p + '_update' -%}{{
+                          relative_time(states[bs].last_changed) if is_state(bs,
+                          'on') else '' }}
+                        tap_action:
+                          action: more-info
+            - entity_id: sensor.*_moisture_state
+              state: high
+              options:
+                type: vertical-stack
+                cards:
+                  - type: custom:button-card
+                    entity: this.entity_id
+                    aspect_ratio: 3/2
+                    show_name: false
+                    show_icon: false
+                    show_state: false
+                    tap_action:
+                      action: more-info
+                    styles:
+                      card:
+                        - background-image: |-
+                            [[[
+                              if (!entity || !entity.attributes) return 'none';
+                              var dn = entity.attributes.friendly_name.split(' ').slice(0,-1).join('_').toLowerCase()
+                                .split('ü').join('u').split('ö').join('o').split('ä').join('a').split('ß').join('ss');
+                              var img = states['image.' + dn + '_benutzerbild'];
+                              return img ? 'url(' + img.attributes.entity_picture + ')' : 'none';
+                            ]]]
+                        - background-size: cover
+                        - background-position: center
+                        - padding: "0"
+                  - type: custom:mushroom-template-card
+                    entity: this.entity_id
+                    primary: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      device_attr(device_id(entity), 'name') }}
+                    secondary: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      states('sensor.' + p + '_scientific_name') }}
+                    icon: mdi:leaf
+                    picture: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      state_attr('image.' + p, 'entity_picture') }}
+                    icon_color: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{{
+                      '219,68,55' if ms == 'too_low' else '255,166,0' if ms ==
+                      'low' else '3,155,229' if ms == 'too_high' else
+                      '67,160,71' }}
+                    badge_icon: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{%
+                      if ms == 'too_low' %}mdi:water-off{% elif ms == 'low'
+                      %}mdi:water-minus{% elif ms == 'too_high'
+                      %}mdi:water-plus{% elif ms == 'high' %}mdi:water-alert{%
+                      else %}mdi:water-check{% endif %}
+                    badge_color: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{{
+                      '219,68,55' if ms == 'too_low' else '255,166,0' if ms ==
+                      'low' else '3,155,229' if ms == 'too_high' else
+                      '67,160,71' }}
+                  - type: history-graph
+                    entities:
+                      - entity: this.entity_id
+                    hours_to_show: 336
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:thermometer
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p +
+                          '_temperature_state') -%}{{ '219,68,55' if s ==
+                          'too_low' else '255,166,0' if s == 'low' else
+                          '3,155,229' if s == 'too_high' else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p +
+                          '_temperature_state') -%}{{ '' if s == 'perfect' else
+                          state_translated('sensor.' + p + '_temperature_state')
+                          }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:white-balance-sunny
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p + '_light_state')
+                          -%}{{ '219,68,55' if s == 'too_low' else '255,166,0'
+                          if s == 'low' else '3,155,229' if s == 'too_high' else
+                          '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p + '_light_state')
+                          -%}{{ '' if s == 'perfect' else
+                          state_translated('sensor.' + p + '_light_state') }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:sprout
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set ns = states('sensor.' + p +
+                          '_nutrients_state') -%}{{ '219,68,55' if ns ==
+                          'too_low' else '255,166,0' if ns == 'low' else
+                          '3,155,229' if ns == 'too_high' else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set fert = states('sensor.' + p +
+                          '_next_fertilization') -%}{%- set days =
+                          ((as_timestamp(fert) - as_timestamp(now())) / 86400) |
+                          int if fert not in ['unavailable','unknown','none','']
+                          else 999 -%}{{ '' if days > 14 else days | string +
+                          'd' }}
+                        tap_action:
+                          action: more-info
+                      - type: spacer
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:battery-alert
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0] -%}{{
+                          '219,68,55' if states('sensor.' + p + '_battery') |
+                          int(100) < 20 else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set pct = states('sensor.' + p + '_battery') |
+                          int(100) -%}{{ pct ~ '%' if pct < 20 else '' }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:update
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set bs = 'binary_sensor.' + p + '_update' -%}{{
+                          '3,155,229' if is_state(bs, 'on') else
+                          'var(--rgb-secondary-text-color)' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set bs = 'binary_sensor.' + p + '_update' -%}{{
+                          relative_time(states[bs].last_changed) if is_state(bs,
+                          'on') else '' }}
+                        tap_action:
+                          action: more-info
+            - entity_id: sensor.*_moisture_state
+              state: perfect
+              options:
+                type: vertical-stack
+                cards:
+                  - type: custom:button-card
+                    entity: this.entity_id
+                    aspect_ratio: 3/2
+                    show_name: false
+                    show_icon: false
+                    show_state: false
+                    tap_action:
+                      action: more-info
+                    styles:
+                      card:
+                        - background-image: |-
+                            [[[
+                              if (!entity || !entity.attributes) return 'none';
+                              var dn = entity.attributes.friendly_name.split(' ').slice(0,-1).join('_').toLowerCase()
+                                .split('ü').join('u').split('ö').join('o').split('ä').join('a').split('ß').join('ss');
+                              var img = states['image.' + dn + '_benutzerbild'];
+                              return img ? 'url(' + img.attributes.entity_picture + ')' : 'none';
+                            ]]]
+                        - background-size: cover
+                        - background-position: center
+                        - padding: "0"
+                  - type: custom:mushroom-template-card
+                    entity: this.entity_id
+                    primary: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      device_attr(device_id(entity), 'name') }}
+                    secondary: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      states('sensor.' + p + '_scientific_name') }}
+                    icon: mdi:leaf
+                    picture: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%} {{
+                      state_attr('image.' + p, 'entity_picture') }}
+                    icon_color: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{{
+                      '219,68,55' if ms == 'too_low' else '255,166,0' if ms ==
+                      'low' else '3,155,229' if ms == 'too_high' else
+                      '67,160,71' }}
+                    badge_icon: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{%
+                      if ms == 'too_low' %}mdi:water-off{% elif ms == 'low'
+                      %}mdi:water-minus{% elif ms == 'too_high'
+                      %}mdi:water-plus{% elif ms == 'high' %}mdi:water-alert{%
+                      else %}mdi:water-check{% endif %}
+                    badge_color: >-
+                      {%- set p =
+                      entity.split('.')[1].split('_moisture_state')[0] -%}{%-
+                      set ms = states('sensor.' + p + '_moisture_state') -%}{{
+                      '219,68,55' if ms == 'too_low' else '255,166,0' if ms ==
+                      'low' else '3,155,229' if ms == 'too_high' else
+                      '67,160,71' }}
+                  - type: history-graph
+                    entities:
+                      - entity: this.entity_id
+                    hours_to_show: 336
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:thermometer
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p +
+                          '_temperature_state') -%}{{ '219,68,55' if s ==
+                          'too_low' else '255,166,0' if s == 'low' else
+                          '3,155,229' if s == 'too_high' else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p +
+                          '_temperature_state') -%}{{ '' if s == 'perfect' else
+                          state_translated('sensor.' + p + '_temperature_state')
+                          }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:white-balance-sunny
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p + '_light_state')
+                          -%}{{ '219,68,55' if s == 'too_low' else '255,166,0'
+                          if s == 'low' else '3,155,229' if s == 'too_high' else
+                          '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set s = states('sensor.' + p + '_light_state')
+                          -%}{{ '' if s == 'perfect' else
+                          state_translated('sensor.' + p + '_light_state') }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:sprout
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set ns = states('sensor.' + p +
+                          '_nutrients_state') -%}{{ '219,68,55' if ns ==
+                          'too_low' else '255,166,0' if ns == 'low' else
+                          '3,155,229' if ns == 'too_high' else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set fert = states('sensor.' + p +
+                          '_next_fertilization') -%}{%- set days =
+                          ((as_timestamp(fert) - as_timestamp(now())) / 86400) |
+                          int if fert not in ['unavailable','unknown','none','']
+                          else 999 -%}{{ '' if days > 14 else days | string +
+                          'd' }}
+                        tap_action:
+                          action: more-info
+                      - type: spacer
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:battery-alert
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0] -%}{{
+                          '219,68,55' if states('sensor.' + p + '_battery') |
+                          int(100) < 20 else '67,160,71' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set pct = states('sensor.' + p + '_battery') |
+                          int(100) -%}{{ pct ~ '%' if pct < 20 else '' }}
+                        tap_action:
+                          action: more-info
+                      - type: template
+                        entity: this.entity_id
+                        icon: mdi:update
+                        icon_color: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set bs = 'binary_sensor.' + p + '_update' -%}{{
+                          '3,155,229' if is_state(bs, 'on') else
+                          'var(--rgb-secondary-text-color)' }}
+                        content: >-
+                          {%- set p =
+                          entity.split('.')[1].split('_moisture_state')[0]
+                          -%}{%- set bs = 'binary_sensor.' + p + '_update' -%}{{
+                          relative_time(states[bs].last_changed) if is_state(bs,
+                          'on') else '' }}
+                        tap_action:
+                          action: more-info
+    panel: true

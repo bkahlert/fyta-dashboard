@@ -7,10 +7,10 @@
 
 The app currently uses two token variables:
 
-| Variable | Where | Problem |
-|---|---|---|
+| Variable         | Where                                                     | Problem                                                                          |
+| ---------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `VITE_API_TOKEN` | `.env.local`, `vite.config.js`, `usePlants.js`, `App.vue` | Baked into the JS bundle at build time — token ends up in the Docker image layer |
-| `FYTA_API_TOKEN` | `server.py`, `entrypoint.sh` | Server-side only, correct |
+| `FYTA_API_TOKEN` | `server.py`, `entrypoint.sh`                              | Server-side only, correct                                                        |
 
 The goal is a single `FYTA_API_TOKEN` env var that works identically in local dev and Docker, with the token never entering the browser bundle.
 
@@ -113,14 +113,14 @@ The podman fallback applies only to the integration test script, not to user-fac
 
 ## File inventory
 
-| File | Action |
-|---|---|
-| `vite.config.js` | Update token var name; add auth injection to `/api` proxy |
-| `server.py` | Inject auth for `/api`; add Referer guard to both proxies; tighten CORS |
-| `src/composables/usePlants.js` | Remove Authorization header |
-| `src/App.vue` | Remove token gate |
-| `config.example.js` | Update comment |
-| `docs/superpowers/specs/2026-04-11-viewport-fill-vue-rewrite-design.md` | Update references |
-| `docs/superpowers/plans/2026-04-11-viewport-fill-vue-rewrite.md` | Update references |
-| `scripts/integration-test.sh` | Create and run |
-| `README.md` | Remove any remaining `VITE_API_TOKEN` mentions |
+| File                                                                    | Action                                                                  |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `vite.config.js`                                                        | Update token var name; add auth injection to `/api` proxy               |
+| `server.py`                                                             | Inject auth for `/api`; add Referer guard to both proxies; tighten CORS |
+| `src/composables/usePlants.js`                                          | Remove Authorization header                                             |
+| `src/App.vue`                                                           | Remove token gate                                                       |
+| `config.example.js`                                                     | Update comment                                                          |
+| `docs/superpowers/specs/2026-04-11-viewport-fill-vue-rewrite-design.md` | Update references                                                       |
+| `docs/superpowers/plans/2026-04-11-viewport-fill-vue-rewrite.md`        | Update references                                                       |
+| `scripts/integration-test.sh`                                           | Create and run                                                          |
+| `README.md`                                                             | Remove any remaining `VITE_API_TOKEN` mentions                          |

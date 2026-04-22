@@ -3,9 +3,9 @@
 A Vue 3 / Vite web dashboard for [FYTA](https://fyta.de) plant sensors.
 It serves the built app and proxies two FYTA API endpoints so the browser never needs CORS access to FYTA's servers directly.
 
-| Proxy path | Upstream |
-|---|---|
-| `/api/*` | `https://web.fyta.de/api/*` — REST API (auth forwarded from the browser) |
+| Proxy path     | Upstream                                                                    |
+| -------------- | --------------------------------------------------------------------------- |
+| `/api/*`       | `https://web.fyta.de/api/*` — REST API (auth forwarded from the browser)    |
 | `/img-proxy/*` | `https://api.prod.fyta-app.de/*` — plant images (auth via `FYTA_API_TOKEN`) |
 
 ## Prerequisites
@@ -28,7 +28,7 @@ To run the full stack locally (including the image proxy):
 
 ```sh
 npm run build
-FYTA_API_TOKEN=$(grep FYTA_API_TOKEN .env.local | cut -d= -f2) python3 server.py
+FYTA_API_TOKEN=$(grep FYTA_API_TOKEN .env.local | cut -d= -f2) python3 deploy/server.py
 ```
 
 Or simply source `.env.local` first:
@@ -36,7 +36,7 @@ Or simply source `.env.local` first:
 ```sh
 npm run build
 set -a && source .env.local && set +a
-python3 server.py
+python3 deploy/server.py
 # → http://localhost:8080
 ```
 
@@ -45,7 +45,7 @@ python3 server.py
 ### Build
 
 ```sh
-docker build -t fyta-dashboard .
+docker build -f deploy/Dockerfile -t fyta-dashboard .
 ```
 
 ### Run

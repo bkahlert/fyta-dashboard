@@ -12,23 +12,24 @@
 
 ## File map
 
-| File | Change |
-|---|---|
-| `scripts/integration-test.sh` | **Create** — runnable test script (written first for TDD) |
-| `server.py` | Inject token for `/api`; add `_check_referer` guard to both proxies; tighten CORS |
-| `vite.config.js` | `VITE_API_TOKEN` → `FYTA_API_TOKEN`; add auth inject to `/api` proxy |
-| `src/composables/usePlants.js` | Remove `Authorization` header from `useFetch` |
-| `src/App.vue` | Remove `apiToken` const and `v-if="!apiToken"` gate |
-| `config.example.js` | Update comment to reference `FYTA_API_TOKEN` |
-| `docs/superpowers/specs/2026-04-11-viewport-fill-vue-rewrite-design.md` | Mark `VITE_API_TOKEN` references as superseded |
-| `docs/superpowers/plans/2026-04-11-viewport-fill-vue-rewrite.md` | Same |
-| `README.md` | Remove any remaining `VITE_API_TOKEN` mentions |
+| File                                                                    | Change                                                                            |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `scripts/integration-test.sh`                                           | **Create** — runnable test script (written first for TDD)                         |
+| `server.py`                                                             | Inject token for `/api`; add `_check_referer` guard to both proxies; tighten CORS |
+| `vite.config.js`                                                        | `VITE_API_TOKEN` → `FYTA_API_TOKEN`; add auth inject to `/api` proxy              |
+| `src/composables/usePlants.js`                                          | Remove `Authorization` header from `useFetch`                                     |
+| `src/App.vue`                                                           | Remove `apiToken` const and `v-if="!apiToken"` gate                               |
+| `config.example.js`                                                     | Update comment to reference `FYTA_API_TOKEN`                                      |
+| `docs/superpowers/specs/2026-04-11-viewport-fill-vue-rewrite-design.md` | Mark `VITE_API_TOKEN` references as superseded                                    |
+| `docs/superpowers/plans/2026-04-11-viewport-fill-vue-rewrite.md`        | Same                                                                              |
+| `README.md`                                                             | Remove any remaining `VITE_API_TOKEN` mentions                                    |
 
 ---
 
 ### Task 1: Write the integration test script (TDD — runs red first)
 
 **Files:**
+
 - Create: `scripts/integration-test.sh`
 
 - [ ] **Step 1: Create the test script**
@@ -214,6 +215,7 @@ git commit -m "test: add integration-test.sh (red — Referer guard not yet impl
 ### Task 2: Harden `server.py` — Referer guard, auth injection, CORS
 
 **Files:**
+
 - Modify: `server.py`
 
 - [ ] **Step 1: Replace `server.py` with hardened version**
@@ -338,51 +340,55 @@ git commit -m "feat: inject FYTA_API_TOKEN server-side for /api, add Referer gua
 ### Task 3: Update `vite.config.js` — token rename and auth injection for `/api`
 
 **Files:**
+
 - Modify: `vite.config.js`
 
 - [ ] **Step 1: Replace `vite.config.js`**
 
 ```js
 // vite.config.js
-import { defineConfig, loadEnv } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig, loadEnv } from "vite";
+import vue from "@vitejs/plugin-vue";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
+  const env = loadEnv(mode, process.cwd(), "");
 
   return {
-    plugins: [
-      vue(),
-      tailwindcss(),
-    ],
+    plugins: [vue(), tailwindcss()],
     server: {
       proxy: {
-        '/api': {
-          target: 'https://web.fyta.de',
+        "/api": {
+          target: "https://web.fyta.de",
           changeOrigin: true,
           secure: true,
           configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq) => {
-              proxyReq.setHeader('Authorization', `Bearer ${env.FYTA_API_TOKEN}`)
-            })
+            proxy.on("proxyReq", (proxyReq) => {
+              proxyReq.setHeader(
+                "Authorization",
+                `Bearer ${env.FYTA_API_TOKEN}`,
+              );
+            });
           },
         },
-        '/img-proxy': {
-          target: 'https://api.prod.fyta-app.de',
+        "/img-proxy": {
+          target: "https://api.prod.fyta-app.de",
           changeOrigin: true,
           secure: true,
-          rewrite: path => path.replace(/^\/img-proxy/, ''),
+          rewrite: (path) => path.replace(/^\/img-proxy/, ""),
           configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq) => {
-              proxyReq.setHeader('Authorization', `Bearer ${env.FYTA_API_TOKEN}`)
-            })
+            proxy.on("proxyReq", (proxyReq) => {
+              proxyReq.setHeader(
+                "Authorization",
+                `Bearer ${env.FYTA_API_TOKEN}`,
+              );
+            });
           },
         },
       },
     },
-  }
-})
+  };
+});
 ```
 
 - [ ] **Step 2: Verify no `VITE_API_TOKEN` remains in vite.config.js**
@@ -405,6 +411,7 @@ git commit -m "feat: vite dev proxy injects FYTA_API_TOKEN for both /api and /im
 ### Task 4: Remove token usage from Vue app
 
 **Files:**
+
 - Modify: `src/composables/usePlants.js`
 - Modify: `src/App.vue`
 
@@ -413,14 +420,11 @@ git commit -m "feat: vite dev proxy injects FYTA_API_TOKEN for both /api and /im
 Replace the `useFetch` call's options object:
 
 ```js
-  const { data, isFetching, error, execute } = useFetch(
-    '/api/user-plant',
-    {
-      headers: {
-        Accept: 'application/json',
-      },
-    }
-  ).json()
+const { data, isFetching, error, execute } = useFetch("/api/user-plant", {
+  headers: {
+    Accept: "application/json",
+  },
+}).json();
 ```
 
 - [ ] **Step 2: Update `src/App.vue` — remove token gate**
@@ -428,35 +432,38 @@ Replace the `useFetch` call's options object:
 Remove these lines from `<script setup>`:
 
 ```js
-const apiToken = import.meta.env.VITE_API_TOKEN
+const apiToken = import.meta.env.VITE_API_TOKEN;
 ```
 
 Remove this entire block from `<template>` (the "Config missing" div, lines 3–18):
 
 ```html
-  <!-- Config missing -->
-  <div v-if="!apiToken" class="min-h-screen flex items-center justify-center p-6 bg-base-100">
-    <div class="card bg-base-200 shadow-xl w-full max-w-lg">
-      <div class="card-body gap-4">
-        <span class="text-5xl select-none">🌿</span>
-        <h1 class="card-title text-xl">Einrichtung erforderlich</h1>
-        <div role="alert" class="alert alert-warning text-sm">
-          <span>
-            Erstelle eine <code class="font-mono">.env.local</code> Datei mit:<br />
-            <code class="font-mono">VITE_API_TOKEN=your-token-here</code><br />
-            Token erhalten unter <strong>web.fyta.de → API Token</strong>
-          </span>
-        </div>
+<!-- Config missing -->
+<div
+  v-if="!apiToken"
+  class="min-h-screen flex items-center justify-center p-6 bg-base-100"
+>
+  <div class="card bg-base-200 shadow-xl w-full max-w-lg">
+    <div class="card-body gap-4">
+      <span class="text-5xl select-none">🌿</span>
+      <h1 class="card-title text-xl">Einrichtung erforderlich</h1>
+      <div role="alert" class="alert alert-warning text-sm">
+        <span>
+          Erstelle eine <code class="font-mono">.env.local</code> Datei mit:<br />
+          <code class="font-mono">VITE_API_TOKEN=your-token-here</code><br />
+          Token erhalten unter <strong>web.fyta.de → API Token</strong>
+        </span>
       </div>
     </div>
   </div>
+</div>
 ```
 
 Also change the outer dashboard wrapper from `v-else` to remove the conditional entirely:
 
 ```html
-  <!-- Dashboard -->
-  <div class="flex flex-col h-screen overflow-hidden bg-base-100">
+<!-- Dashboard -->
+<div class="flex flex-col h-screen overflow-hidden bg-base-100"></div>
 ```
 
 - [ ] **Step 3: Verify no `VITE_API_TOKEN` or `import.meta.env` remain in src/**
@@ -479,6 +486,7 @@ git commit -m "feat: remove VITE_API_TOKEN from Vue app — proxy handles auth"
 ### Task 5: Update `config.example.js`
 
 **Files:**
+
 - Modify: `config.example.js`
 
 - [ ] **Step 1: Replace the file content**
@@ -508,6 +516,7 @@ git commit -m "docs: update config.example.js — FYTA_API_TOKEN replaces VITE_A
 ### Task 6: Update historical docs and README
 
 **Files:**
+
 - Modify: `docs/superpowers/specs/2026-04-11-viewport-fill-vue-rewrite-design.md`
 - Modify: `docs/superpowers/plans/2026-04-11-viewport-fill-vue-rewrite.md`
 - Modify: `README.md`
@@ -599,18 +608,18 @@ git commit -m "test: integration tests green — token consolidation complete"
 
 **Spec coverage check:**
 
-| Spec requirement | Covered by |
-|---|---|
-| `FYTA_API_TOKEN` single public env var | Tasks 2, 3, 4, 5 |
-| Token never in browser bundle | Task 4 (removed from usePlants.js, App.vue) |
-| Vite dev proxy injects auth for both `/api` and `/img-proxy` | Task 3 |
-| `server.py` injects auth for `/api` | Task 2 |
-| Referer guard on both proxy handlers | Task 2 |
-| CORS tightened from `*` to own origin | Task 2 |
-| Integration test script created and run | Tasks 1, 7 |
-| Docker + podman fallback in test | Task 1 |
-| `README.md` references `docker` only (no podman) | Task 6 (check only) |
-| Historical docs updated | Task 6 |
-| `config.example.js` updated | Task 5 |
+| Spec requirement                                             | Covered by                                  |
+| ------------------------------------------------------------ | ------------------------------------------- |
+| `FYTA_API_TOKEN` single public env var                       | Tasks 2, 3, 4, 5                            |
+| Token never in browser bundle                                | Task 4 (removed from usePlants.js, App.vue) |
+| Vite dev proxy injects auth for both `/api` and `/img-proxy` | Task 3                                      |
+| `server.py` injects auth for `/api`                          | Task 2                                      |
+| Referer guard on both proxy handlers                         | Task 2                                      |
+| CORS tightened from `*` to own origin                        | Task 2                                      |
+| Integration test script created and run                      | Tasks 1, 7                                  |
+| Docker + podman fallback in test                             | Task 1                                      |
+| `README.md` references `docker` only (no podman)             | Task 6 (check only)                         |
+| Historical docs updated                                      | Task 6                                      |
+| `config.example.js` updated                                  | Task 5                                      |
 
 All requirements covered. No placeholders. No TODOs. No type mismatches across tasks.

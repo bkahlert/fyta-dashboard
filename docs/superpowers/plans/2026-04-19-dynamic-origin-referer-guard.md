@@ -12,16 +12,17 @@
 
 ## File map
 
-| File | Change |
-|---|---|
-| `scripts/integration-test.sh` | Add 2 new assertions for custom-Host behaviour (TDD red) |
-| `server.py` | Remove `ORIGIN` constant; add `_origin()` helper; update 4 callsites |
+| File                          | Change                                                               |
+| ----------------------------- | -------------------------------------------------------------------- |
+| `scripts/integration-test.sh` | Add 2 new assertions for custom-Host behaviour (TDD red)             |
+| `server.py`                   | Remove `ORIGIN` constant; add `_origin()` helper; update 4 callsites |
 
 ---
 
 ### Task 1: Add failing tests for hostname-agnostic behaviour (TDD red)
 
 **Files:**
+
 - Modify: `scripts/integration-test.sh`
 
 The existing tests all use `localhost` as both the connection target and the Referer host, so they pass even with the hardcoded constant. We need two new assertions that are only possible to satisfy with the dynamic-origin approach.
@@ -53,6 +54,7 @@ assert_status \
 ```
 
 Expected output:
+
 ```
 ϟ /api with custom Host + matching Referer → 200: expected 200, got 403
 ```
@@ -71,6 +73,7 @@ git commit -m "test: add hostname-agnostic Referer guard assertions (red)"
 ### Task 2: Implement `_origin()` and update all callsites (green)
 
 **Files:**
+
 - Modify: `server.py`
 
 - [ ] **Step 1: Write the complete updated `server.py`**
@@ -185,6 +188,7 @@ if __name__ == '__main__':
 ```
 
 Key changes vs current file:
+
 - Line 17 (`ORIGIN = ...`) — **removed**
 - New method `_origin(self)` added before `_check_referer`
 - `_check_referer`: `ORIGIN` → `self._origin()`
@@ -199,6 +203,7 @@ grep 'ORIGIN' server.py
 ```
 
 Expected — only method references, no constant:
+
 ```
             return f"http://{self.headers.get('Host', f'localhost:{PORT}')}"
             self.send_header('Access-Control-Allow-Origin', self._origin())
@@ -213,6 +218,7 @@ Expected — only method references, no constant:
 ```
 
 Expected — all tests pass including the two new ones:
+
 ```
 ▪ Local server tests
 ✔ /api without Referer → 403
@@ -244,15 +250,15 @@ git commit -m "feat: derive Referer guard origin from Host header — works for 
 
 **Spec coverage:**
 
-| Spec requirement | Task |
-|---|---|
-| Remove `ORIGIN` constant | Task 2 |
-| Add `_origin()` helper reading `Host` header | Task 2 |
-| Update `_check_referer` to use `self._origin()` | Task 2 |
-| Update `do_OPTIONS` CORS header | Task 2 |
-| Update `_proxy_api` CORS header | Task 2 |
-| Update `_proxy_img` CORS header | Task 2 |
-| Integration tests still pass | Task 2, Step 3 |
-| New behaviour tested (custom hostname accepted) | Task 1 |
+| Spec requirement                                | Task           |
+| ----------------------------------------------- | -------------- |
+| Remove `ORIGIN` constant                        | Task 2         |
+| Add `_origin()` helper reading `Host` header    | Task 2         |
+| Update `_check_referer` to use `self._origin()` | Task 2         |
+| Update `do_OPTIONS` CORS header                 | Task 2         |
+| Update `_proxy_api` CORS header                 | Task 2         |
+| Update `_proxy_img` CORS header                 | Task 2         |
+| Integration tests still pass                    | Task 2, Step 3 |
+| New behaviour tested (custom hostname accepted) | Task 1         |
 
 All requirements covered. No placeholders. No TODOs. Method name `_origin` used consistently across both tasks.

@@ -8,4 +8,4 @@ if [[ -z "${FYTA_API_TOKEN:-}" ]]; then
     exit 1
 fi
 
-exec python3 server.py
+exec python3 "$(dirname "$0")/server.py"

@@ -19,17 +19,18 @@ Resolve the tension between categorical sort order and numeric moisture graph in
 
 Create one HA template sensor per plant that exposes:
 
-| Field | Value | Purpose |
-|---|---|---|
-| `state` | numeric moisture `%` (float) | drives `type: sensor` `graph: line` |
-| `unit_of_measurement` | `%` | |
-| `device_class` | `moisture` | |
-| `state_class` | `measurement` | |
-| `attribute: moisture_state` | e.g. `too_low` | auto-entities attribute filter |
+| Field                       | Value                        | Purpose                             |
+| --------------------------- | ---------------------------- | ----------------------------------- |
+| `state`                     | numeric moisture `%` (float) | drives `type: sensor` `graph: line` |
+| `unit_of_measurement`       | `%`                          |                                     |
+| `device_class`              | `moisture`                   |                                     |
+| `state_class`               | `measurement`                |                                     |
+| `attribute: moisture_state` | e.g. `too_low`               | auto-entities attribute filter      |
 
 **Entity ID pattern:** `sensor.{prefix}_plant` (e.g. `sensor.count_plantula_plant`)
 
 **Template definition (per plant):**
+
 ```yaml
 template:
   - sensor:
@@ -81,10 +82,10 @@ Restored to the original `type: sensor` with `graph: line`:
 
 ```js
 const sensorGraph = {
-  type: 'sensor',
-  entity: 'this.entity_id',  // sensor.*_plant — numeric state
-  name: 'Moisture',
-  graph: 'line',
+  type: "sensor",
+  entity: "this.entity_id", // sensor.*_plant — numeric state
+  name: "Moisture",
+  graph: "line",
   hours_to_show: 336,
   limits: { min: 0, max: 100 },
 };
@@ -111,23 +112,23 @@ After Phase 1, `this.entity_id` is the template sensor (`sensor.*_plant`), whose
 
 ```js
 const freshnessChip = {
-  type: 'template',
-  entity: 'this.entity_id',
-  icon: 'mdi:update',
+  type: "template",
+  entity: "this.entity_id",
+  icon: "mdi:update",
   icon_color: `
     {%- set age = ((as_timestamp(now()) - as_timestamp(states[entity].last_updated)) / 3600) | float -%}
     {{ '${C.success}' if age <= 24 else '${C.warning}' if age <= 48 else '${C.error}' }}
   `,
   content: `{{ relative_time(states[entity].last_updated) }}`,
-  tap_action: { action: 'more-info' },
+  tap_action: { action: "more-info" },
 };
 ```
 
-| Age | Color |
-|---|---|
-| ≤ 24 h | green |
+| Age    | Color  |
+| ------ | ------ |
+| ≤ 24 h | green  |
 | ≤ 48 h | orange |
-| > 48 h | red |
+| > 48 h | red    |
 
 Content is always visible (no conditional suppression). Replaces the `updateChip` in `statusChips`.
 
@@ -147,14 +148,14 @@ Expand the `sensor.*_plant` template sensor to carry all displayed plant attribu
 
 **Additional attributes to include:**
 
-| Attribute | Source |
-|---|---|
-| `temperature_state` | `sensor.{p}_temperature_state` |
-| `light_state` | `sensor.{p}_light_state` |
-| `nutrients_state` | `sensor.{p}_nutrients_state` |
-| `battery` | `sensor.{p}_battery` |
+| Attribute            | Source                          |
+| -------------------- | ------------------------------- |
+| `temperature_state`  | `sensor.{p}_temperature_state`  |
+| `light_state`        | `sensor.{p}_light_state`        |
+| `nutrients_state`    | `sensor.{p}_nutrients_state`    |
+| `battery`            | `sensor.{p}_battery`            |
 | `next_fertilization` | `sensor.{p}_next_fertilization` |
-| `scientific_name` | `sensor.{p}_scientific_name` |
+| `scientific_name`    | `sensor.{p}_scientific_name`    |
 
 After expanding the template sensor, Jinja2 templates in the mushroom card and chips are simplified to read directly from `state_attr(entity, 'attribute_name')` instead of constructing sibling entity IDs. PFX_MT becomes unnecessary.
 

@@ -39,6 +39,7 @@ The module-level `ORIGIN` constant is removed entirely.
 ## Why Host works
 
 When a browser loads the page from `http://paul.local:8080` and then makes a fetch to `/api/user-plant`, it sends:
+
 - `Host: paul.local:8080` (where it connected)
 - `Referer: http://paul.local:8080/` (where the page came from)
 
@@ -50,8 +51,8 @@ None. Tests send requests to `localhost:8080`, so curl automatically sends `Host
 
 ## File changes
 
-| File | Change |
-|---|---|
+| File        | Change                                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `server.py` | Remove `ORIGIN` constant; add `_origin()` helper; update `_check_referer` and all three `Access-Control-Allow-Origin` callsites |
 
 ## Deployment note

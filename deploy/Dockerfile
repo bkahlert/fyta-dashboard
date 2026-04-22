@@ -18,7 +18,7 @@ RUN useradd --no-create-home --shell /bin/false app
 WORKDIR /app
 
 COPY --from=builder /app/dist ./dist
-COPY server.py entrypoint.sh ./
+COPY deploy/server.py deploy/entrypoint.sh ./
 
 RUN chmod +x entrypoint.sh && chown -R app:app /app
 

@@ -12,12 +12,12 @@ Improve the Home Assistant plants-dashboard (view 0) in two ways:
 
 ## Prerequisites / installed HACS cards
 
-| Card | Purpose |
-|------|---------|
-| `custom:auto-entities` | Dynamic plant enumeration (already installed) |
-| `custom:mushroom-template-card` | Plant info header (already installed) |
-| `custom:layout-card` | Responsive grid (newly installed) |
-| `custom:card-mod` | CSS styling of vertical-stack (newly installed) |
+| Card                            | Purpose                                         |
+| ------------------------------- | ----------------------------------------------- |
+| `custom:auto-entities`          | Dynamic plant enumeration (already installed)   |
+| `custom:mushroom-template-card` | Plant info header (already installed)           |
+| `custom:layout-card`            | Responsive grid (newly installed)               |
+| `custom:card-mod`               | CSS styling of vertical-stack (newly installed) |
 
 ## Backup
 

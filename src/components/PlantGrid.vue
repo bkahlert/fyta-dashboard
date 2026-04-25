@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
-import type { Plant } from '../types/plant'
+import type { Plant } from '../api/schemas'
 
 import PlantCard from './PlantCard.vue'
 
 const props = defineProps<{ plants: Plant[] }>()
 
-const sorted = computed(() => props.plants.toSorted((a, b) => a.attentionRank - b.attentionRank))
+const sorted = computed(() =>
+  props.plants.toSorted(
+    (a, b) =>
+      a.attentionRank - b.attentionRank || (a.nickname ?? '').localeCompare(b.nickname ?? '', 'de'),
+  ),
+)
 
 const outerRef = ref<HTMLElement | null>(null)
 const innerRef = ref<HTMLElement | null>(null)
@@ -78,14 +83,11 @@ const gridStyle = computed(() => ({
 </script>
 
 <template>
-  <div
-    ref="outerRef"
-    class="relative flex-1 overflow-x-hidden overflow-y-auto p-2 min-h-0"
-  >
+  <div ref="outerRef" class="relative flex-1 overflow-x-hidden overflow-y-auto p-2 min-h-0">
     <div
       v-if="sorted.length > 0"
       ref="innerRef"
-      class="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2"
+      class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2"
       :style="gridStyle"
     >
       <PlantCard v-for="plant in sorted" :key="plant.id" :plant="plant" />

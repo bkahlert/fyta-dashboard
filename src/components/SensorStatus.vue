@@ -1,6 +1,6 @@
 <script lang="ts">
 export { MEASUREMENT_STATUSES } from '../api/schemas'
-export const SENSOR_TYPES = ['light', 'moisture', 'salinity', 'temp'] as const
+export const SENSOR_TYPES = ['battery', 'light', 'moisture', 'salinity', 'temp'] as const
 export type SensorType = (typeof SENSOR_TYPES)[number]
 </script>
 
@@ -8,6 +8,9 @@ export type SensorType = (typeof SENSOR_TYPES)[number]
 import type { Component } from 'vue'
 
 import {
+  Battery,
+  BatteryFull,
+  BatteryLow,
   Check,
   Cloudy,
   Droplet,
@@ -27,11 +30,14 @@ import {
 } from 'lucide-vue-next'
 import { computed } from 'vue'
 
-import type { MeasurementStatus } from '../types/plant'
+import type { MeasurementStatusValue } from '../api/schemas'
+import ThermometerWithBulb from './icons/ThermometerWithBulb.vue'
 
 const props = defineProps<{
-  status: MeasurementStatus
+  status: MeasurementStatusValue
   type: SensorType
+  unit?: string
+  value?: null | string
 }>()
 
 interface SensorEntry {
@@ -40,7 +46,15 @@ interface SensorEntry {
   strokeWidth?: number
 }
 
-const sensorConfig: Record<SensorType, Record<MeasurementStatus, SensorEntry>> = {
+const sensorConfig: Record<SensorType, Record<MeasurementStatusValue, SensorEntry>> = {
+  battery: {
+    no_data: { icon: Battery, cls: 'text-base-content/50' },
+    too_low: { icon: Battery, cls: 'text-error' },
+    low: { icon: BatteryLow, cls: 'text-warning' },
+    perfect: { icon: BatteryFull, cls: 'text-success' },
+    high: { icon: BatteryFull, cls: 'text-success' },
+    too_high: { icon: BatteryFull, cls: 'text-success' },
+  },
   light: {
     no_data: { icon: Sun, cls: 'text-base-content/50' },
     too_low: { icon: Cloudy, cls: 'text-zinc-400' },
@@ -69,13 +83,21 @@ const sensorConfig: Record<SensorType, Record<MeasurementStatus, SensorEntry>> =
     no_data: { icon: Thermometer, cls: 'text-base-content/50' },
     too_low: { icon: Snowflake, cls: 'text-sky-200' },
     low: { icon: ThermometerSnowflake, cls: 'text-sky-400' },
-    perfect: { icon: Thermometer, cls: 'text-yellow-400' },
+    perfect: { icon: ThermometerWithBulb, cls: 'text-base-content/55', strokeWidth: 2.5 },
     high: { icon: ThermometerSun, cls: 'text-amber-400' },
     too_high: { icon: Flame, cls: 'text-orange-500' },
   },
 }
 
-const sensorLabels: Record<SensorType, Record<MeasurementStatus, string>> = {
+const sensorLabels: Record<SensorType, Record<MeasurementStatusValue, string>> = {
+  battery: {
+    no_data: '',
+    too_low: 'Leer',
+    low: 'Schwach',
+    perfect: 'OK',
+    high: 'OK',
+    too_high: 'OK',
+  },
   light: {
     no_data: '',
     too_low: 'Dunkel',
@@ -115,10 +137,13 @@ const icon = computed(() => entry.value.icon)
 const cls = computed(() => entry.value.cls)
 const isOk = computed(() => props.status === 'perfect')
 const label = computed(() => sensorLabels[props.type][props.status])
+const title = computed(() =>
+  props.value != null && props.unit ? `${props.value} ${props.unit}` : undefined,
+)
 </script>
 
 <template>
-  <span class="inline-flex items-center gap-1" :class="cls">
+  <span class="inline-flex items-center gap-1" :class="cls" :title="title">
     <span class="indicator">
       <Check v-if="isOk" class="indicator-item size-2 text-success" />
       <component :is="icon" class="size-3 shrink-0" :stroke-width="entry.strokeWidth ?? 2" />

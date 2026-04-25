@@ -109,6 +109,51 @@ export const TemperatureUnit = z
   ])
   .transform((n): TemperatureUnitValue => TEMPERATURE_UNITS[(n - 1) as 0 | 1])
 
+export const ATTENTION_LEVELS = ['now', 'soon', 'ok', 'skip'] as const
+export type AttentionLevel = (typeof ATTENTION_LEVELS)[number]
+
+const ATTENTION_RANK = Object.fromEntries(
+  ATTENTION_LEVELS.map((level, i) => [level, i]),
+) as Record<AttentionLevel, number>
+
+function computeAttention(data: { measurements?: { moisture?: { status: MeasurementStatusValue } | null } | null }): AttentionLevel {
+  const moisture = data.measurements?.moisture?.status ?? 'no_data'
+  if (moisture === 'too_low') return 'now'
+  if (moisture === 'low') return 'soon'
+  if (moisture === 'too_high') return 'skip'
+  return 'ok'
+}
+
+// The FYTA API returns salinity status inverted: high readings indicate low nutrients and vice versa.
+const SALINITY_STATUS_INVERT: Record<MeasurementStatusValue, MeasurementStatusValue> = {
+  no_data: 'no_data',
+  too_low: 'too_high',
+  low: 'high',
+  perfect: 'perfect',
+  high: 'low',
+  too_high: 'too_low',
+}
+
+function deriveStatus(
+  value: number,
+  t: { min_acceptable?: number; min_good?: number; max_good?: number; max_acceptable?: number },
+): MeasurementStatusValue {
+  if (t.min_acceptable != null && value < t.min_acceptable) return 'too_low'
+  if (t.min_good != null && value < t.min_good) return 'low'
+  if (t.max_acceptable != null && value > t.max_acceptable) return 'too_high'
+  if (t.max_good != null && value > t.max_good) return 'high'
+  return 'perfect'
+}
+
+const ApiTimestamp = z
+  .string()
+  .nullable()
+  .transform((s): Date | null => {
+    if (!s) return null
+    const d = new Date(s.includes('T') ? s : s.replace(' ', 'T') + 'Z')
+    return Number.isNaN(d.getTime()) ? null : d
+  })
+
 export const MeasurementsTimelineSchema = z.enum(['hour', 'day', 'week', 'month'])
 
 // ── Shared Building Blocks ──────────────────────────────────────────────────
@@ -138,7 +183,7 @@ const SensorSchema = z.object({
   uuid_ios: z.string().nullable().optional(),
   version: z.string(),
   is_battery_low: z.boolean(),
-  received_data_at: z.string().nullable(),
+  received_data_at: ApiTimestamp,
 })
 
 export const HubSchema = z.object({
@@ -146,8 +191,8 @@ export const HubSchema = z.object({
   hub_id: z.string(),
   hub_name: z.string().optional(),
   status: HubStatus,
-  received_data_at: z.string().nullable(),
-  reached_hub_at: z.string().nullable(),
+  received_data_at: ApiTimestamp,
+  reached_hub_at: ApiTimestamp,
 })
 
 // ── Auth API ────────────────────────────────────────────────────────────────
@@ -260,7 +305,7 @@ const MoistureMeasurementSchema = z.object({
 })
 
 const SalinityMeasurementSchema = z.object({
-  status: MeasurementStatus,
+  status: MeasurementStatus.transform(s => SALINITY_STATUS_INVERT[s]),
   values: RangeValues,
   unit: z.string(),
   absolute_values: AbsoluteValues,
@@ -278,24 +323,35 @@ export const PlantDetailSchema = z.object({
   origin_path: z.string().nullable(),
   plant_thumb_path: z.string().nullable(),
   plant_origin_path: z.string().nullable(),
-  received_data_at: z.string().nullable(),
+  received_data_at: ApiTimestamp,
   gathering_data: z.boolean(),
   is_illegal: z.boolean(),
   not_supported: z.boolean(),
   sensor_update_available: z.boolean(),
-  garden: z.object({ id: z.number(), name: z.string() }),
-  sensor: SensorSchema.extend({ created_at: z.string().nullable() }),
-  hub: HubSchema,
+  garden: z.object({ id: z.number(), name: z.string() }).nullish(),
+  sensor: SensorSchema.extend({ created_at: ApiTimestamp }).nullish(),
+  hub: HubSchema.nullish(),
   measurements: z.object({
     ph: PhMeasurementSchema,
     temperature: TemperatureMeasurementSchema,
     light: LightMeasurementSchema,
     moisture: MoistureMeasurementSchema,
     salinity: SalinityMeasurementSchema,
-    battery: z.string().nullable(),
-  }),
+    battery: z.union([z.string(), z.number()]).transform(v => String(v)).nullable(),
+  }).nullish(),
   temperature_unit: TemperatureUnit,
   know_hows: z.array(z.unknown()),
+}).transform((data) => {
+  const attentionLevel = computeAttention(data)
+  const rawBattery = data.measurements?.battery
+  const battery_status: MeasurementStatusValue | null =
+    rawBattery != null ? deriveStatus(Number(rawBattery), { min_acceptable: 1, min_good: 20 }) : null
+  return {
+    ...data,
+    attentionLevel,
+    attentionRank: ATTENTION_RANK[attentionLevel],
+    battery_status,
+  }
 })
 
 export const PlantDetailResponseSchema = z.object({
@@ -374,7 +430,7 @@ export type GardenSummary = z.infer<typeof GardenSummarySchema>
 export type LoginRequest = z.infer<typeof LoginRequestSchema>
 export type LoginResponse = z.infer<typeof LoginResponseSchema>
 export type MeasurementsTimeline = z.infer<typeof MeasurementsTimelineSchema>
-export type PlantDetail = z.infer<typeof PlantDetailSchema>
+export type Plant = z.infer<typeof PlantDetailSchema>
 export type PlantDetailResponse = z.infer<typeof PlantDetailResponseSchema>
 export type PlantMeasurementsResponse = z.infer<typeof PlantMeasurementsResponseSchema>
 export type PlantSummary = z.infer<typeof PlantSummarySchema>

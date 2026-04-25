@@ -2,7 +2,7 @@
 import { AlertTriangle, CheckCircle, Leaf, RefreshCw, Wifi } from 'lucide-vue-next'
 import { computed } from 'vue'
 
-import type { Plant } from '../types/plant'
+import type { Plant } from '../api/schemas'
 import { formatRelativeTime, useRelativeTime } from '../composables/useRelativeTime'
 
 import WateringCan from './icons/WateringCan.vue'
@@ -16,16 +16,18 @@ const props = defineProps<{
 
 defineEmits<{ refresh: [] }>()
 
-const timeAgo = useRelativeTime(computed(() => props.lastUpdated ?? null))
+const timeAgo = useRelativeTime(
+  computed(() => props.lastUpdated ?? null),
+  { collapseSeconds: true },
+)
 
 const count = computed(() => props.plants?.length ?? 0)
 const now = computed(() => props.plants?.filter((p) => p.attentionLevel === 'now').length ?? 0)
 const soon = computed(() => props.plants?.filter((p) => p.attentionLevel === 'soon').length ?? 0)
-const ok = computed(() => props.plants?.filter((p) => p.attentionLevel === 'ok').length ?? 0)
 </script>
 
 <template>
-  <header class="navbar bg-base-200 border-b border-base-300 min-h-12 px-4 shrink-0">
+  <header class="navbar min-h-12 px-4 shrink-0">
     <!-- Left: title -->
     <div class="navbar-start gap-2 min-w-0">
       <Leaf class="size-5 text-success shrink-0 select-none" />
@@ -37,13 +39,11 @@ const ok = computed(() => props.plants?.filter((p) => p.attentionLevel === 'ok')
     <!-- Center: status badges -->
     <div v-if="count > 0" class="navbar-center flex items-center gap-1.5">
       <span v-if="now" class="badge badge-error badge-sm gap-1">
-        <WateringCan class="size-3 shrink-0" />{{ now }} {{ now > 1 ? 'brauchen' : 'braucht' }} jetzt Wasser
+        <WateringCan class="size-3 shrink-0" />{{ now }}
+        {{ now > 1 ? 'brauchen' : 'braucht' }} jetzt Wasser
       </span>
       <span v-if="soon" class="badge badge-warning badge-sm gap-1">
         <AlertTriangle class="size-3 shrink-0" />{{ soon }} bald gießen
-      </span>
-      <span v-if="ok" class="badge badge-success badge-sm gap-1">
-        <CheckCircle class="size-3 shrink-0" />{{ ok }} gut versorgt
       </span>
     </div>
 
@@ -63,9 +63,15 @@ const ok = computed(() => props.plants?.filter((p) => p.attentionLevel === 'ok')
       <div v-if="goodHubs && goodHubs.length > 0" class="w-px h-4 bg-base-300 shrink-0" />
 
       <!-- Page refresh group -->
-      <button class="btn btn-xs btn-ghost flex items-center gap-1 px-1.5" :disabled="isLoading" @click="$emit('refresh')">
+      <button
+        class="btn btn-xs btn-ghost flex items-center gap-1 px-1.5"
+        :disabled="isLoading"
+        @click="$emit('refresh')"
+      >
         <RefreshCw :class="{ 'animate-spin': isLoading }" class="size-3 shrink-0" />
-        <span v-if="lastUpdated" class="text-xs text-base-content/50 whitespace-nowrap">{{ timeAgo }}</span>
+        <span v-if="lastUpdated" class="text-xs text-base-content/50 whitespace-nowrap">{{
+          timeAgo
+        }}</span>
       </button>
     </div>
   </header>

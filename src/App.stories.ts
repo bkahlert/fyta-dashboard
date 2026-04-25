@@ -1,10 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 
-import type { MeasurementStatus } from './types/plant'
-
+import type { Plant } from './api/schemas'
 import AppHeader from './components/AppHeader.vue'
 import PlantGrid from './components/PlantGrid.vue'
-import { createPlant } from './types/plant'
+import { makeMoisturePlant } from './stories/plantFactory'
 
 const meta: Meta = {
   title: 'App',
@@ -14,60 +13,16 @@ const meta: Meta = {
 export default meta
 type Story = StoryObj
 
-const makePlant = (
-  id: number,
-  moisture_status: MeasurementStatus,
-  nickname: string,
-  hub?: { hub_id: string; hub_name: string; status: 'correct' | 'error' },
-) =>
-  createPlant({
-    id, nickname, scientific_name: 'Monstera deliciosa',
-    moisture_status, light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
-    thumb_path: '',
-    hub: hub ?? null,
-  })
-
-const FEW = [
-  makePlant(1, 'too_low', 'Fikus'),
-  makePlant(2, 'low', 'Monstera'),
-  makePlant(3, 'perfect', 'Efeutute'),
-]
-
-const MANY = [
-  makePlant(1,  'too_low', 'Fikus'),
-  makePlant(2,  'low',     'Monstera'),
-  makePlant(3,  'perfect', 'Efeutute'),
-  makePlant(4,  'perfect', 'Bogenhanf'),
-  makePlant(5,  'high',    'Aloe Vera'),
-  makePlant(6,  'perfect', 'Geldbaum'),
-  makePlant(7,  'low',     'Orchidee'),
-  makePlant(8,  'perfect', 'Palme'),
-  makePlant(9,  'too_low', 'Kaktus'),
-  makePlant(10, 'perfect', 'Farn'),
-  makePlant(11, 'perfect', 'Tillandsie'),
-  makePlant(12, 'too_high','Basilikum'),
-  makePlant(13, 'perfect', 'Zitronenbaum'),
-  makePlant(14, 'low',     'Bambus'),
-  makePlant(15, 'perfect', 'Yucca'),
-  makePlant(16, 'too_low', 'Sukkulente'),
-  makePlant(17, 'perfect', 'Drachenbaum'),
-  makePlant(18, 'high',    'Bromelien'),
-  makePlant(19, 'perfect', 'Chrysantheme'),
-  makePlant(20, 'low',     'Rosmarin'),
-  makePlant(21, 'perfect', 'Minze'),
-  makePlant(22, 'too_low', 'Basilikum 2'),
-  makePlant(23, 'perfect', 'Lavendel'),
-]
-
-const shell = (plants: ReturnType<typeof makePlant>[], isFetching = false, error = '') => ({
+// lostHubs mirrors hubs_with_lost_connection from GET /api/user-plant (the authoritative source per CLAUDE.md)
+const shell = (plants: Plant[], isFetching = false, error = '', lostHubs: Array<{ id: string; name: string }> = []) => ({
   components: { AppHeader, PlantGrid },
-  setup: () => {
-    const errorHubs = [...new Map(
-      plants.filter(p => p.hubStatus === 'error' && p.hubId)
-        .map(p => [p.hubId, { id: p.hubId!, name: p.hubName ?? p.hubId! }]),
-    ).values()]
-    return { plants, isFetching, error, errorHubs, lastUpdated: new Date(Date.now() - 3 * 60 * 1000) }
-  },
+  setup: () => ({
+    plants,
+    isFetching,
+    error,
+    errorHubs: lostHubs,
+    lastUpdated: new Date(Date.now() - 3 * 60 * 1000),
+  }),
   template: `
     <div class="flex flex-col h-screen overflow-hidden bg-base-100">
       <AppHeader :is-loading="isFetching" :last-updated="lastUpdated" :plants="plants" />
@@ -90,8 +45,40 @@ const shell = (plants: ReturnType<typeof makePlant>[], isFetching = false, error
   `,
 })
 
-const HUB_A = { hub_id: 'hub-1', hub_name: 'Wohnzimmer', status: 'error' as const } satisfies Parameters<typeof makePlant>[3]
-const HUB_B = { hub_id: 'hub-2', hub_name: 'Balkon',     status: 'error' as const } satisfies Parameters<typeof makePlant>[3]
+const HUB_A: NonNullable<Plant['hub']> = { id: 1, hub_id: 'hub-1', hub_name: 'Wohnzimmer', status: 'correct', received_data_at: null, reached_hub_at: null }
+const HUB_B: NonNullable<Plant['hub']> = { id: 2, hub_id: 'hub-2', hub_name: 'Balkon',     status: 'correct', received_data_at: null, reached_hub_at: null }
+
+const FEW = [
+  makeMoisturePlant(1, 'too_low', 'Fikus'),
+  makeMoisturePlant(2, 'low',     'Monstera'),
+  makeMoisturePlant(3, 'perfect', 'Efeutute'),
+]
+
+const MANY = [
+  makeMoisturePlant(1,  'too_low', 'Fikus'),
+  makeMoisturePlant(2,  'low',     'Monstera'),
+  makeMoisturePlant(3,  'perfect', 'Efeutute'),
+  makeMoisturePlant(4,  'perfect', 'Bogenhanf'),
+  makeMoisturePlant(5,  'high',    'Aloe Vera'),
+  makeMoisturePlant(6,  'perfect', 'Geldbaum'),
+  makeMoisturePlant(7,  'low',     'Orchidee'),
+  makeMoisturePlant(8,  'perfect', 'Palme'),
+  makeMoisturePlant(9,  'too_low', 'Kaktus'),
+  makeMoisturePlant(10, 'perfect', 'Farn'),
+  makeMoisturePlant(11, 'perfect', 'Tillandsie'),
+  makeMoisturePlant(12, 'too_high','Basilikum'),
+  makeMoisturePlant(13, 'perfect', 'Zitronenbaum'),
+  makeMoisturePlant(14, 'low',     'Bambus'),
+  makeMoisturePlant(15, 'perfect', 'Yucca'),
+  makeMoisturePlant(16, 'too_low', 'Sukkulente'),
+  makeMoisturePlant(17, 'perfect', 'Drachenbaum'),
+  makeMoisturePlant(18, 'high',    'Bromelien'),
+  makeMoisturePlant(19, 'perfect', 'Chrysantheme'),
+  makeMoisturePlant(20, 'low',     'Rosmarin'),
+  makeMoisturePlant(21, 'perfect', 'Minze'),
+  makeMoisturePlant(22, 'too_low', 'Basilikum 2'),
+  makeMoisturePlant(23, 'perfect', 'Lavendel'),
+]
 
 export const Loading: Story = { render: () => shell([], true) }
 export const FetchError: Story = { render: () => shell([], false, 'HTTP 401 Unauthorized') }
@@ -99,18 +86,29 @@ export const FewPlants: Story = { render: () => shell(FEW) }
 export const ManyPlants: Story = { render: () => shell(MANY) }
 
 export const HubError: Story = {
-  render: () => shell([
-    makePlant(1, 'perfect', 'Fikus', HUB_A),
-    makePlant(2, 'low',     'Monstera', HUB_A),
-    makePlant(3, 'perfect', 'Efeutute'),
-  ]),
+  render: () => shell(
+    [
+      makeMoisturePlant(1, 'perfect', 'Fikus',    HUB_A),
+      makeMoisturePlant(2, 'low',     'Monstera', HUB_A),
+      makeMoisturePlant(3, 'perfect', 'Efeutute'),
+    ],
+    false, '',
+    [{ id: HUB_A.hub_id, name: HUB_A.hub_name ?? HUB_A.hub_id }],
+  ),
 }
 
 export const MultipleHubErrors: Story = {
-  render: () => shell([
-    makePlant(1, 'perfect', 'Fikus',    HUB_A),
-    makePlant(2, 'low',     'Monstera', HUB_A),
-    makePlant(3, 'too_low', 'Kaktus',   HUB_B),
-    makePlant(4, 'perfect', 'Efeutute'),
-  ]),
+  render: () => shell(
+    [
+      makeMoisturePlant(1, 'perfect', 'Fikus',    HUB_A),
+      makeMoisturePlant(2, 'low',     'Monstera', HUB_A),
+      makeMoisturePlant(3, 'too_low', 'Kaktus',   HUB_B),
+      makeMoisturePlant(4, 'perfect', 'Efeutute'),
+    ],
+    false, '',
+    [
+      { id: HUB_A.hub_id, name: HUB_A.hub_name ?? HUB_A.hub_id },
+      { id: HUB_B.hub_id, name: HUB_B.hub_name ?? HUB_B.hub_id },
+    ],
+  ),
 }

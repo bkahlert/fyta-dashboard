@@ -1,30 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <!-- 2×2 equal grid: 4px margin, 4px gap, 44×44 cells; outlined, transparent fill -->
-  <rect x="4"  y="4"  width="44" height="44" rx="8" fill="none" stroke="#ff5861" stroke-width="3"/>
-  <rect x="52" y="4"  width="44" height="44" rx="8" fill="none" stroke="#ffbe00" stroke-width="3"/>
-  <rect x="4"  y="52" width="44" height="44" rx="8" fill="none" stroke="#00a96e" stroke-width="3"/>
-  <rect x="52" y="52" width="44" height="44" rx="8" fill="none" stroke="#00a96e" stroke-width="3"/>
-
-  <!--
-    Lucide Leaf (24×24) scaled to 36×36 and centered in each 44×44 cell.
-    Leaf body filled with the matching box color; stem stroked in same color.
-  -->
-  <g stroke-linecap="round" stroke-linejoin="round">
-    <g transform="translate(8, 8) scale(1.5)">
-      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" fill="#ff5861" stroke="none"/>
-      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" fill="none" stroke="#8B5E3C" stroke-width="1.33"/>
-    </g>
-    <g transform="translate(56, 8) scale(1.5)">
-      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" fill="#ffbe00" stroke="none"/>
-      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" fill="none" stroke="#8B5E3C" stroke-width="1.33"/>
-    </g>
-    <g transform="translate(8, 56) scale(1.5)">
-      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" fill="#00a96e" stroke="none"/>
-      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" fill="none" stroke="#8B5E3C" stroke-width="1.33"/>
-    </g>
-    <g transform="translate(56, 56) scale(1.5)">
-      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" fill="#00a96e" stroke="none"/>
-      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" fill="none" stroke="#8B5E3C" stroke-width="1.33"/>
-    </g>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+  <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
 </svg>

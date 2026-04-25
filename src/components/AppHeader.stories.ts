@@ -1,8 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 
-import type { MeasurementStatus } from '../types/plant'
-
-import { createPlant } from '../types/plant'
+import { baseMeasurements, makePlant } from '../stories/plantFactory'
 import AppHeader from './AppHeader.vue'
 
 const meta: Meta<typeof AppHeader> = {
@@ -17,9 +15,6 @@ const meta: Meta<typeof AppHeader> = {
 export default meta
 type Story = StoryObj<typeof AppHeader>
 
-const makePlant = (id: number, moisture_status: MeasurementStatus) =>
-  createPlant({ id, nickname: `Plant ${String(id)}`, scientific_name: 'Monstera deliciosa', moisture_status, light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect', thumb_path: '' })
-
 export const NoPlants: Story = {}
 
 export const Loading: Story = {
@@ -29,13 +24,23 @@ export const Loading: Story = {
 export const WithPlants: Story = {
   args: {
     lastUpdated: new Date(Date.now() - 3 * 60 * 1000),
-    plants: [makePlant(1, 'too_low'), makePlant(2, 'low'), makePlant(3, 'perfect'), makePlant(4, 'perfect'), makePlant(5, 'perfect')],
+    plants: [
+      makePlant({ id: 1, nickname: 'Plant 1', measurements: { ...baseMeasurements, moisture: { ...baseMeasurements.moisture, status: 'too_low' } }, attentionLevel: 'now' }),
+      makePlant({ id: 2, nickname: 'Plant 2', measurements: { ...baseMeasurements, moisture: { ...baseMeasurements.moisture, status: 'low' } }, attentionLevel: 'soon' }),
+      makePlant({ id: 3, nickname: 'Plant 3', attentionLevel: 'ok' }),
+      makePlant({ id: 4, nickname: 'Plant 4', attentionLevel: 'ok' }),
+      makePlant({ id: 5, nickname: 'Plant 5', attentionLevel: 'ok' }),
+    ],
   },
 }
 
 export const AllHealthy: Story = {
   args: {
     lastUpdated: new Date(Date.now() - 1 * 60 * 1000),
-    plants: [makePlant(1, 'perfect'), makePlant(2, 'perfect'), makePlant(3, 'perfect')],
+    plants: [
+      makePlant({ id: 1, nickname: 'Plant 1', attentionLevel: 'ok' }),
+      makePlant({ id: 2, nickname: 'Plant 2', attentionLevel: 'ok' }),
+      makePlant({ id: 3, nickname: 'Plant 3', attentionLevel: 'ok' }),
+    ],
   },
 }

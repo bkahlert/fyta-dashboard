@@ -1,48 +1,44 @@
-import type {Meta, StoryObj} from '@storybook/vue3-vite'
+import type { Meta, StoryObj } from '@storybook/vue3-vite'
 
-import {MEASUREMENT_STATUSES} from '../api/schemas'
-import {createPlant} from '../types/plant'
+import { MEASUREMENT_STATUSES } from '../api/schemas'
+import { baseMeasurements, baseSensor, makePlant } from '../stories/plantFactory'
 import PlantCard from './PlantCard.vue'
 
-const meta: Meta<typeof PlantCard> = {
-  component: PlantCard,
-}
-
+const meta: Meta<typeof PlantCard> = { component: PlantCard }
 export default meta
 type Story = StoryObj<typeof PlantCard>
 
-const card = () => ({template: '<div style="width:200px"><story /></div>'})
+const card = () => ({ template: '<div style="width:200px"><story /></div>' })
 
-const base = {
-  scientific_name: 'Monstera deliciosa',
-  thumb_path: 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Filodendron.jpg',
-}
+const THUMB = 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Filodendron.jpg'
 
-// Varied sensor states so all three sensor rows are visible at once
+// ── Stories ────────────────────────────────────────────────────
+
 export const Default: Story = {
   decorators: [card],
   args: {
-    plant: createPlant({
-      ...base,
+    plant: makePlant({
       id: 1,
       nickname: 'Monstera',
-      moisture_status: 'perfect',
-      light_status: 'low',
-      temperature_status: 'too_high',
-      salinity_status: 'high',
-      sensor: {status: 'correct', received_data_at: new Date(Date.now() - 45 * 60 * 1000).toISOString()},
+      thumb_path: THUMB,
+      measurements: { ...baseMeasurements, moisture: { ...baseMeasurements.moisture, status: 'perfect' }, light: { ...baseMeasurements.light, status: 'low' }, temperature: { ...baseMeasurements.temperature, status: 'too_high' }, salinity: { ...baseMeasurements.salinity, status: 'high' } },
+      attentionLevel: 'ok',
+      battery_status: 'perfect',
     }),
   },
 }
 
-// ── Moisture states ────────────────────────────────────────────
-
 export const NeedsWater: Story = {
   decorators: [card],
   args: {
-    plant: createPlant({
-      ...base, id: 2, nickname: 'Fikus', scientific_name: 'Ficus lyrata',
-      moisture_status: 'too_low', light_status: 'low', temperature_status: 'perfect', salinity_status: 'perfect',
+    plant: makePlant({
+      id: 2,
+      nickname: 'Fikus',
+      scientific_name: 'Ficus lyrata',
+      measurements: { ...baseMeasurements, moisture: { ...baseMeasurements.moisture, status: 'too_low' } },
+      attentionLevel: 'now',
+      attentionRank: 0,
+      battery_status: 'perfect',
     }),
   },
 }
@@ -50,9 +46,14 @@ export const NeedsWater: Story = {
 export const WaterSoon: Story = {
   decorators: [card],
   args: {
-    plant: createPlant({
-      ...base, id: 3, nickname: 'Efeutute', scientific_name: 'Epipremnum aureum',
-      moisture_status: 'low', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
+    plant: makePlant({
+      id: 3,
+      nickname: 'Efeutute',
+      scientific_name: 'Epipremnum aureum',
+      measurements: { ...baseMeasurements, moisture: { ...baseMeasurements.moisture, status: 'low' } },
+      attentionLevel: 'soon',
+      attentionRank: 1,
+      battery_status: 'perfect',
     }),
   },
 }
@@ -60,22 +61,29 @@ export const WaterSoon: Story = {
 export const Overwatered: Story = {
   decorators: [card],
   args: {
-    plant: createPlant({
-      ...base, id: 4, nickname: 'Basilikum', scientific_name: 'Ocimum basilicum',
-      moisture_status: 'too_high', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'too_high',
+    plant: makePlant({
+      id: 4,
+      nickname: 'Basilikum',
+      scientific_name: 'Ocimum basilicum',
+      measurements: { ...baseMeasurements, moisture: { ...baseMeasurements.moisture, status: 'too_high' }, salinity: { ...baseMeasurements.salinity, status: 'too_high' } },
+      attentionLevel: 'now',
+      attentionRank: 0,
+      battery_status: 'perfect',
     }),
   },
 }
 
-// ── Sensor / connectivity states ───────────────────────────────
-
 export const NoSensor: Story = {
   decorators: [card],
   args: {
-    plant: createPlant({
-      ...base, id: 5, nickname: 'Kaktus', scientific_name: 'Echinopsis pachanoi',
-      moisture_status: 'no_data', light_status: null, temperature_status: null, salinity_status: null,
+    plant: makePlant({
+      id: 5,
+      nickname: 'Kaktus',
+      scientific_name: 'Echinopsis pachanoi',
       sensor: null,
+      measurements: null,
+      attentionLevel: 'ok',
+      battery_status: null,
     }),
   },
 }
@@ -83,10 +91,12 @@ export const NoSensor: Story = {
 export const SensorError: Story = {
   decorators: [card],
   args: {
-    plant: createPlant({
-      ...base, id: 6, nickname: 'Aloe Vera', scientific_name: 'Aloe barbadensis',
-      moisture_status: 'perfect', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
-      sensor: {status: 'error', received_data_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()},
+    plant: makePlant({
+      id: 6,
+      nickname: 'Aloe Vera',
+      scientific_name: 'Aloe barbadensis',
+      sensor: { ...baseSensor, status: 'error', received_data_at: new Date(Date.now() - 3 * 60 * 60 * 1000) },
+      battery_status: 'perfect',
     }),
   },
 }
@@ -94,67 +104,29 @@ export const SensorError: Story = {
 export const BatteryLow: Story = {
   decorators: [card],
   args: {
-    plant: {
-      ...createPlant({
-        ...base, id: 7, nickname: 'Orchidee', scientific_name: 'Phalaenopsis amabilis',
-        moisture_status: 'low', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
-        sensor: {id: 'CB:2F:8B:D7:D2:B1', status: 'correct', is_battery_low: true, received_data_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()},
-      }),
-      sensorBatteryLevel: 5,
-    },
+    plant: makePlant({
+      id: 7,
+      nickname: 'Orchidee',
+      scientific_name: 'Phalaenopsis amabilis',
+      sensor: { ...baseSensor, is_battery_low: true },
+      measurements: { ...baseMeasurements, moisture: { ...baseMeasurements.moisture, status: 'low' }, battery: '5' },
+      attentionLevel: 'soon',
+      battery_status: 'low',
+    }),
   },
 }
 
 export const BatteryEmpty: Story = {
   decorators: [card],
   args: {
-    plant: {
-      ...createPlant({
-        ...base, id: 12, nickname: 'Eingang Ficus', scientific_name: 'Ficus retusa',
-        moisture_status: 'no_data', light_status: 'no_data', temperature_status: 'no_data', salinity_status: 'no_data',
-        sensor: {id: 'CB:2F:8B:D7:D2:B1', status: 'error', is_battery_low: true, received_data_at: new Date(Date.now() - 4 * 30 * 24 * 60 * 60 * 1000).toISOString()},
-      }),
-      sensorBatteryLevel: 0,
-    },
-  },
-}
-
-export const WifiLost: Story = {
-  decorators: [card],
-  args: {
-    plant: createPlant({
-      ...base, id: 8, nickname: 'Geldbaum', scientific_name: 'Crassula ovata',
-      moisture_status: 'perfect', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
-      wifi_status: 'lost',
-      sensor: {id: 'F9:B6:F9:82:87:50', status: 'correct', received_data_at: new Date(Date.now() - 15 * 60 * 1000).toISOString()},
-    }),
-  },
-}
-
-export const BatteryLowAndWifiLost: Story = {
-  decorators: [card],
-  args: {
-    plant: {
-      ...createPlant({
-        ...base, id: 10, nickname: 'Farn', scientific_name: 'Nephrolepis exaltata',
-        moisture_status: 'low', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
-        wifi_status: 'lost',
-        sensor: {id: 'D5:B7:AA:CE:8F:0A', status: 'correct', is_battery_low: true, received_data_at: new Date(Date.now() - 20 * 60 * 1000).toISOString()},
-      }),
-      sensorBatteryLevel: 10,
-    },
-  },
-}
-
-export const NoSensorWithWifi: Story = {
-  decorators: [card],
-  args: {
-    plant: createPlant({
-      ...base, id: 11, nickname: 'Zebrina', scientific_name: 'Tradescantia zebrina',
-      moisture_status: 'no_data', light_status: null, temperature_status: null, salinity_status: null,
-      // API returns wifi_status: 2 even for sensorless plants — badge must not show
-      wifi_status: 'error',
-      sensor: null,
+    plant: makePlant({
+      id: 12,
+      nickname: 'Eingang Ficus',
+      scientific_name: 'Ficus retusa',
+      sensor: { ...baseSensor, status: 'error', is_battery_low: true, received_data_at: new Date(Date.now() - 4 * 30 * 24 * 60 * 60 * 1000) },
+      measurements: { ...baseMeasurements, moisture: { ...baseMeasurements.moisture, status: 'no_data' }, light: { ...baseMeasurements.light, status: 'no_data' }, temperature: { ...baseMeasurements.temperature, status: 'no_data' }, salinity: { ...baseMeasurements.salinity, status: 'no_data' }, battery: '0' },
+      attentionLevel: 'ok',
+      battery_status: 'too_low',
     }),
   },
 }
@@ -162,29 +134,34 @@ export const NoSensorWithWifi: Story = {
 export const NoPhoto: Story = {
   decorators: [card],
   args: {
-    plant: createPlant({
-      ...base, id: 9, nickname: 'Monstera', thumb_path: '', plant_thumb_path: '',
-      moisture_status: 'perfect', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
+    plant: makePlant({
+      id: 9,
+      nickname: 'Monstera',
+      thumb_path: null,
+      plant_thumb_path: null,
+      battery_status: 'perfect',
     }),
   },
 }
 
-// ── All moisture states ────────────────────────────────────────
-
 export const AllMoistureStates: Story = {
   render: () => ({
-    components: {PlantCard},
+    components: { PlantCard },
     setup: () => ({
       plants: MEASUREMENT_STATUSES.map((ms, i) =>
-        createPlant({
-          ...base,
+        makePlant({
           id: i,
           nickname: ms.replace('_', ' '),
-          moisture_status: ms,
-          light_status: ms,
-          temperature_status: ms,
-          salinity_status: ms,
-          sensor: ms === 'no_data' ? null : {status: 'correct', received_data_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()},
+          sensor: ms === 'no_data' ? null : baseSensor,
+          measurements: ms === 'no_data' ? null : {
+            ...baseMeasurements,
+            moisture: { ...baseMeasurements.moisture, status: ms },
+            light: { ...baseMeasurements.light, status: ms },
+            temperature: { ...baseMeasurements.temperature, status: ms },
+            salinity: { ...baseMeasurements.salinity, status: ms },
+          },
+          attentionLevel: ms === 'too_low' ? 'now' : ms === 'low' ? 'soon' : ms === 'too_high' ? 'skip' : 'ok',
+          battery_status: ms === 'no_data' ? null : 'perfect',
         }),
       ),
     }),

@@ -1,74 +1,38 @@
 <script setup lang="ts">
-import {useIntervalFn} from '@vueuse/core'
-import {computed} from 'vue'
+import { computed } from 'vue'
 
 import AppHeader from './components/AppHeader.vue'
 import PlantGrid from './components/PlantGrid.vue'
-import {useBatteryLevels} from './composables/useBatteryLevels'
-import {usePlants} from './composables/usePlants'
+import { usePlants } from './composables/usePlants'
 
-const {error, execute, isFetching, lastUpdated, lostHubs, plants} = usePlants()
-const {batteryLevels, fetchBatteryLevels} = useBatteryLevels(plants)
+const { error, execute, isFetching, lastUpdated, lostHubs, plants } = usePlants()
 
-const plantsWithBattery = computed(() =>
-  plants.value.map((p) => ({
-    ...p,
-    sensorBatteryLevel: batteryLevels.value.get(p.id) ?? null,
-  })),
-)
-
-function hubSyncTime(dateStr: null | string | undefined): Date | null {
-  if (!dateStr) return null
-  // API timestamps are UTC ("YYYY-MM-DD HH:mm:ss") — parse as UTC
-  const d = new Date(dateStr.replace(' ', 'T') + 'Z')
-  return Number.isNaN(d.getTime()) ? null : d
-}
-
-// Hubs that FYTA reports as having lost internet connectivity
 const errorHubs = computed(() =>
-  lostHubs.value.map(h => ({
+  lostHubs.value.map((h) => ({
     id: h.hub_id,
     name: h.hub_name ?? h.hub_id,
   })),
 )
 
-// Hubs seen in plant data that are NOT in the lost-connection list.
-// reached_hub_at is per-plant (reflects last poll that had data for that sensor),
-// so take the MAX across all plants sharing the same hub to get the true latest hub contact.
 const goodHubs = computed(() => {
-  const lostIds = new Set(lostHubs.value.map(h => h.hub_id))
-  const byHub = new Map<string, { id: string; maxReached: string; name: string }>()
+  const lostIds = new Set(lostHubs.value.map((h) => h.hub_id))
+  const byHub = new Map<string, { id: string; maxReached: Date | null; name: string }>()
   for (const p of plants.value) {
-    if (!p.hubId || lostIds.has(p.hubId)) continue
-    const reached = p.hubLastReached ?? ''
-    const existing = byHub.get(p.hubId)
-    if (!existing || reached > existing.maxReached) {
-      byHub.set(p.hubId, {id: p.hubId, maxReached: reached, name: p.hubName ?? p.hubId})
+    if (!p.hub?.hub_id || lostIds.has(p.hub.hub_id)) continue
+    const reached = p.hub.reached_hub_at ?? null
+    const existing = byHub.get(p.hub.hub_id)
+    if (!existing || (reached != null && (existing.maxReached == null || reached > existing.maxReached))) {
+      byHub.set(p.hub.hub_id, { id: p.hub.hub_id, maxReached: reached, name: p.hub.hub_name ?? p.hub.hub_id })
     }
   }
-  return [...byHub.values()].map(h => ({
-    id: h.id,
-    lastSync: hubSyncTime(h.maxReached || null),
-    name: h.name,
-  }))
+  return [...byHub.values()].map((h) => ({ id: h.id, lastSync: h.maxReached, name: h.name }))
 })
-
-function refresh() {
-  void execute()
-  void fetchBatteryLevels()
-}
-
-useIntervalFn(() => {
-  void execute()
-}, 5 * 60 * 1000)
 </script>
 
 <template>
-  <!-- Dashboard -->
   <div class="flex flex-col h-screen overflow-hidden bg-base-100">
-    <AppHeader :good-hubs="goodHubs" :is-loading="isFetching" :last-updated="lastUpdated" :plants="plantsWithBattery" @refresh="refresh"/>
+    <AppHeader :good-hubs="goodHubs" :is-loading="isFetching" :last-updated="lastUpdated" :plants="plants" @refresh="execute" />
 
-    <!-- Hub connectivity warning -->
     <div v-if="errorHubs.length > 0" class="bg-warning/10 border-b border-warning/30 px-4 py-1 shrink-0">
       <p v-for="h in errorHubs" :key="h.id" class="text-xs text-warning flex items-center gap-1.5">
         <span>⚠️</span>
@@ -76,20 +40,16 @@ useIntervalFn(() => {
       </p>
     </div>
 
-    <!-- Loading (initial) -->
     <div v-if="isFetching && plants.length === 0" class="flex-1 flex items-center justify-center">
       <span class="loading loading-spinner loading-lg text-primary"></span>
     </div>
 
-    <!-- Error -->
     <div v-else-if="error && plants.length === 0" class="p-4">
       <div role="alert" class="alert alert-error text-sm">
         <span>Pflanzen konnten nicht geladen werden: {{ error }}</span>
       </div>
     </div>
 
-    <!-- Grid -->
-    <PlantGrid v-else :plants="plantsWithBattery"/>
+    <PlantGrid v-else :plants="plants" />
   </div>
 </template>
-

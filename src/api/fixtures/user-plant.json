@@ -1,0 +1,222 @@
+{
+    "plant": {
+        "id": 73330,
+        "airtable_id": 156,
+        "nickname": "Eingang Drachenbaum",
+        "status": 2,
+        "scientific_name": "Dracaena reflexa",
+        "genus": null,
+        "plant_id": 156,
+        "is_shared": false,
+        "family_id": null,
+        "pot_size": 20,
+        "drainage": 0,
+        "light_factor": 1,
+        "owner": {},
+        "peers": [],
+        "soil_type_id": 1,
+        "thumb_path": "https://api.prod.fyta-app.de/user-plant/73330/thumb_path?timestamp=2026-04-25%2012%3A15%3A54",
+        "origin_path": "https://api.prod.fyta-app.de/user-plant/73330/origin_path?timestamp=2026-04-25%2012%3A15%3A54",
+        "plant_thumb_path": "https://s3.eu-central-1.amazonaws.com/de.fyta.prod.media/image/thumb/4991/thumb_1651708861163.jpeg",
+        "plant_origin_path": "https://s3.eu-central-1.amazonaws.com/de.fyta.prod.media/image/origin/4991/origin_1651708859917.jpeg",
+        "received_data_at": "2026-04-25 16:36:28",
+        "gathering_data": false,
+        "is_illegal": false,
+        "not_supported": false,
+        "fertilisation": {
+            "last_fertilised_at": "2025-09-06",
+            "fertilise_at": "2026-03-15",
+            "was_repotted": true
+        },
+        "notifications": {
+            "light": true,
+            "temperature": true,
+            "water": true,
+            "nutrition": true
+        },
+        "sensor_update_available": false,
+        "location": null,
+        "verification": false,
+        "is_productive_plant": false,
+        "dismissed_sensor_message_at": null,
+        "garden": null,
+        "sensor": {
+            "id": "F4:C8:8E:4D:BC:90",
+            "has_sensor": true,
+            "status": 1,
+            "device_type": 1,
+            "sensor_type_id": 1,
+            "version": "1.5.0",
+            "light_factor": 1,
+            "probe_length_id": 4,
+            "moisture_factor": 1.1793917417526245,
+            "is_battery_low": false,
+            "received_data_at": "2026-04-25 16:36:28",
+            "created_at": "2025-02-26 18:04:45",
+            "has_sensor_update": false
+        },
+        "hub": {
+            "id": 19765,
+            "hub_id": "34:B7:DA:E8:10:36",
+            "hub_name": "Hub2",
+            "status": 1,
+            "received_data_at": "2026-04-25 16:36:28",
+            "reached_hub_at": "2026-04-25 17:01:12"
+        },
+        "sensors": [
+            {
+                "id": "F4:C8:8E:4D:BC:90",
+                "status": 1,
+                "version": "1.5.0",
+                "device_type": 1,
+                "sensor_type_id": 1,
+                "light_factor": 1,
+                "probe_length_id": 4,
+                "moisture_factor": 1.1793917417526245,
+                "battery_level": null,
+                "last_data_received_at": "2026-04-25 16:36:28",
+                "created_at": "2025-02-26 18:04:45"
+            }
+        ],
+        "missing": [],
+        "measurements": {
+            "air_humidity": {
+                "type": "air_humidity",
+                "status": null,
+                "values": {
+                    "min_good": "40",
+                    "max_good": "70",
+                    "min_acceptable": "30",
+                    "max_acceptable": "80",
+                    "current": null,
+                    "currentFormatted": null
+                },
+                "unit": "%"
+            },
+            "ph": {
+                "type": "ph",
+                "status": null,
+                "values": {
+                    "min": "4",
+                    "max": "7",
+                    "current": null
+                },
+                "unit": "pH",
+                "absolute_values": {
+                    "min": "0",
+                    "max": "7.5",
+                    "minText": "0",
+                    "maxText": "7.5"
+                }
+            },
+            "nutrients": {
+                "type": "nutrients",
+                "status": 1
+            },
+            "temperature": {
+                "type": "temperature",
+                "status": 3,
+                "values": {
+                    "min_good": "17",
+                    "max_good": "36",
+                    "min_acceptable": "10",
+                    "max_acceptable": "42",
+                    "current": "24",
+                    "currentFormatted": "24",
+                    "optimal_hours": 0
+                },
+                "unit": "\u00b0C/h",
+                "absolute_values": {
+                    "min": "0",
+                    "max": "50",
+                    "minText": "0",
+                    "maxText": "50"
+                }
+            },
+            "light": {
+                "type": "light",
+                "status": 1,
+                "values": {
+                    "min_good": "23",
+                    "max_good": "690",
+                    "min_acceptable": "5.5",
+                    "max_acceptable": "920",
+                    "current": "1",
+                    "currentFormatted": "1",
+                    "optimal_hours": 0
+                },
+                "dli_values": {
+                    "min_good": "6",
+                    "max_good": "30",
+                    "min_acceptable": "0.03",
+                    "max_acceptable": "40"
+                },
+                "unit": "\u03bcmol/h",
+                "dli_unit": "mol/day",
+                "absolute_values": {
+                    "min": "0",
+                    "max": "940",
+                    "minText": "0",
+                    "maxText": "940"
+                }
+            },
+            "moisture": {
+                "type": "moisture",
+                "status": 5,
+                "values": {
+                    "min_good": "20",
+                    "max_good": "70",
+                    "min_acceptable": "10",
+                    "max_acceptable": "80",
+                    "current": "100",
+                    "currentFormatted": "100"
+                },
+                "unit": "%/h",
+                "absolute_values": {
+                    "min": "0",
+                    "max": "100",
+                    "minText": "0",
+                    "maxText": "100"
+                }
+            },
+            "salinity": {
+                "type": "salinity",
+                "status": 5,
+                "values": {
+                    "min_good": "0.2",
+                    "max_good": "1",
+                    "min_acceptable": "0.1",
+                    "max_acceptable": "1.3",
+                    "current": "3",
+                    "currentFormatted": "3.00"
+                },
+                "unit": "mS/cm/h",
+                "absolute_values": {
+                    "min": "0",
+                    "max": "3.2",
+                    "minText": "0",
+                    "maxText": "3.2"
+                }
+            },
+            "battery": null
+        },
+        "temperature_unit": 1,
+        "know_hows": [],
+        "device_menu": {
+            "actions": [
+                {
+                    "action": "data_collected",
+                    "title": "2026-04-25 16:36:28",
+                    "description": "",
+                    "priority": 6
+                }
+            ],
+            "buttons": [
+                "sensor",
+                "hub"
+            ],
+            "live_mode_enabled": true,
+            "diagnose_enabled": true
+        }
+    }
+}

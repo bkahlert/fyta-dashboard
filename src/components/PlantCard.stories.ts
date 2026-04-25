@@ -94,11 +94,28 @@ export const SensorError: Story = {
 export const BatteryLow: Story = {
   decorators: [card],
   args: {
-    plant: createPlant({
-      ...base, id: 7, nickname: 'Orchidee', scientific_name: 'Phalaenopsis amabilis',
-      moisture_status: 'low', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
-      sensor: {status: 'correct', is_battery_low: true, received_data_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()},
-    }),
+    plant: {
+      ...createPlant({
+        ...base, id: 7, nickname: 'Orchidee', scientific_name: 'Phalaenopsis amabilis',
+        moisture_status: 'low', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
+        sensor: {id: 'CB:2F:8B:D7:D2:B1', status: 'correct', is_battery_low: true, received_data_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()},
+      }),
+      sensorBatteryLevel: 5,
+    },
+  },
+}
+
+export const BatteryEmpty: Story = {
+  decorators: [card],
+  args: {
+    plant: {
+      ...createPlant({
+        ...base, id: 12, nickname: 'Eingang Ficus', scientific_name: 'Ficus retusa',
+        moisture_status: 'no_data', light_status: 'no_data', temperature_status: 'no_data', salinity_status: 'no_data',
+        sensor: {id: 'CB:2F:8B:D7:D2:B1', status: 'error', is_battery_low: true, received_data_at: new Date(Date.now() - 4 * 30 * 24 * 60 * 60 * 1000).toISOString()},
+      }),
+      sensorBatteryLevel: 0,
+    },
   },
 }
 
@@ -109,7 +126,7 @@ export const WifiLost: Story = {
       ...base, id: 8, nickname: 'Geldbaum', scientific_name: 'Crassula ovata',
       moisture_status: 'perfect', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
       wifi_status: 'lost',
-      sensor: {status: 'correct', received_data_at: new Date(Date.now() - 15 * 60 * 1000).toISOString()},
+      sensor: {id: 'F9:B6:F9:82:87:50', status: 'correct', received_data_at: new Date(Date.now() - 15 * 60 * 1000).toISOString()},
     }),
   },
 }
@@ -117,11 +134,27 @@ export const WifiLost: Story = {
 export const BatteryLowAndWifiLost: Story = {
   decorators: [card],
   args: {
+    plant: {
+      ...createPlant({
+        ...base, id: 10, nickname: 'Farn', scientific_name: 'Nephrolepis exaltata',
+        moisture_status: 'low', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
+        wifi_status: 'lost',
+        sensor: {id: 'D5:B7:AA:CE:8F:0A', status: 'correct', is_battery_low: true, received_data_at: new Date(Date.now() - 20 * 60 * 1000).toISOString()},
+      }),
+      sensorBatteryLevel: 10,
+    },
+  },
+}
+
+export const NoSensorWithWifi: Story = {
+  decorators: [card],
+  args: {
     plant: createPlant({
-      ...base, id: 10, nickname: 'Farn', scientific_name: 'Nephrolepis exaltata',
-      moisture_status: 'low', light_status: 'perfect', temperature_status: 'perfect', salinity_status: 'perfect',
-      wifi_status: 'lost',
-      sensor: {status: 'correct', is_battery_low: true, received_data_at: new Date(Date.now() - 20 * 60 * 1000).toISOString()},
+      ...base, id: 11, nickname: 'Zebrina', scientific_name: 'Tradescantia zebrina',
+      moisture_status: 'no_data', light_status: null, temperature_status: null, salinity_status: null,
+      // API returns wifi_status: 2 even for sensorless plants — badge must not show
+      wifi_status: 'error',
+      sensor: null,
     }),
   },
 }

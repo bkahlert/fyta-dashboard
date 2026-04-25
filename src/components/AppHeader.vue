@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import type { UseTimeAgoMessages } from '@vueuse/core'
-
-import { useTimeAgo } from '@vueuse/core'
 import { AlertTriangle, CheckCircle, Leaf, RefreshCw, Wifi } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 import type { Plant } from '../types/plant'
+import { formatRelativeTime, useRelativeTime } from '../composables/useRelativeTime'
 
 import WateringCan from './icons/WateringCan.vue'
 
 const props = defineProps<{
-  goodHubs?: { id: string; lastSync: null | string; name: string }[]
+  goodHubs?: { id: string; lastSync: Date | null; name: string }[]
   isLoading?: boolean
   lastUpdated?: Date | null
   plants?: Plant[]
@@ -18,24 +16,7 @@ const props = defineProps<{
 
 defineEmits<{ refresh: [] }>()
 
-const timeAgoMessages: UseTimeAgoMessages = {
-  day: (n: number) => `${String(n)} Tag${n === 1 ? '' : 'en'}`,
-  future: (n: string) => `in ${n}`,
-  hour: (n: number) => `${String(n)} Stunde${n === 1 ? '' : 'n'}`,
-  invalid: 'Ungültig',
-  justNow: 'Gerade eben',
-  minute: (n: number) => `${String(n)} Minute${n === 1 ? '' : 'n'}`,
-  month: (n: number) => `${String(n)} Monat${n === 1 ? '' : 'en'}`,
-  past: (n: string) => `vor ${n}`,
-  second: (n: number) => `${String(n)} Sekunde${n === 1 ? '' : 'n'}`,
-  week: (n: number) => `${String(n)} Woche${n === 1 ? '' : 'n'}`,
-  year: (n: number) => `${String(n)} Jahr${n === 1 ? '' : 'en'}`,
-}
-
-const timeAgo = useTimeAgo(
-  computed(() => props.lastUpdated ?? new Date(0)),
-  { messages: timeAgoMessages },
-)
+const timeAgo = useRelativeTime(computed(() => props.lastUpdated ?? null))
 
 const count = computed(() => props.plants?.length ?? 0)
 const now = computed(() => props.plants?.filter((p) => p.attentionLevel === 'now').length ?? 0)
@@ -75,7 +56,7 @@ const ok = computed(() => props.plants?.filter((p) => p.attentionLevel === 'ok')
         class="text-xs text-success flex items-center gap-1 whitespace-nowrap"
       >
         <Wifi class="size-3.5 shrink-0" />
-        <span>Sync {{ h.lastSync ?? '–' }}</span>
+        <span>Sync {{ formatRelativeTime(h.lastSync) }}</span>
       </span>
 
       <!-- Divider between hub sync and page refresh -->

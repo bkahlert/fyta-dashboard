@@ -4,16 +4,24 @@ import {computed} from 'vue'
 
 import AppHeader from './components/AppHeader.vue'
 import PlantGrid from './components/PlantGrid.vue'
+import {useBatteryLevels} from './composables/useBatteryLevels'
 import {usePlants} from './composables/usePlants'
 
 const {error, execute, isFetching, lastUpdated, lostHubs, plants} = usePlants()
+const {batteryLevels, fetchBatteryLevels} = useBatteryLevels(plants)
 
-function hubSyncTime(dateStr: null | string | undefined): null | string {
+const plantsWithBattery = computed(() =>
+  plants.value.map((p) => ({
+    ...p,
+    sensorBatteryLevel: batteryLevels.value.get(p.id) ?? null,
+  })),
+)
+
+function hubSyncTime(dateStr: null | string | undefined): Date | null {
   if (!dateStr) return null
-  // API timestamps are UTC ("YYYY-MM-DD HH:mm:ss") — parse as UTC, display in local time
+  // API timestamps are UTC ("YYYY-MM-DD HH:mm:ss") — parse as UTC
   const d = new Date(dateStr.replace(' ', 'T') + 'Z')
-  if (Number.isNaN(d.getTime())) return null
-  return d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+  return Number.isNaN(d.getTime()) ? null : d
 }
 
 // Hubs that FYTA reports as having lost internet connectivity
@@ -47,6 +55,7 @@ const goodHubs = computed(() => {
 
 function refresh() {
   void execute()
+  void fetchBatteryLevels()
 }
 
 useIntervalFn(() => {
@@ -57,7 +66,7 @@ useIntervalFn(() => {
 <template>
   <!-- Dashboard -->
   <div class="flex flex-col h-screen overflow-hidden bg-base-100">
-    <AppHeader :good-hubs="goodHubs" :is-loading="isFetching" :last-updated="lastUpdated" :plants="plants" @refresh="refresh"/>
+    <AppHeader :good-hubs="goodHubs" :is-loading="isFetching" :last-updated="lastUpdated" :plants="plantsWithBattery" @refresh="refresh"/>
 
     <!-- Hub connectivity warning -->
     <div v-if="errorHubs.length > 0" class="bg-warning/10 border-b border-warning/30 px-4 py-1 shrink-0">
@@ -80,7 +89,7 @@ useIntervalFn(() => {
     </div>
 
     <!-- Grid -->
-    <PlantGrid v-else :plants="plants"/>
+    <PlantGrid v-else :plants="plantsWithBattery"/>
   </div>
 </template>
 

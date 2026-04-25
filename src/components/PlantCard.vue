@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { BatteryLow, WifiOff } from 'lucide-vue-next'
+import { BatteryLow, BatteryWarning } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 import type { Plant } from '../types/plant'
+import { useRelativeTime } from '../composables/useRelativeTime'
 
 import AttentionBadge from './AttentionBadge.vue'
 import PlantPhoto from './PlantPhoto.vue'
@@ -18,26 +19,35 @@ const cardBorderClass = computed(() => {
   return 'border-2 border-base-300 bg-base-200'
 })
 
-// ── Wifi status ───────────────────────────────────────────────
-// 'lost': lost connection to all hubs  →  error  (red)
-// 'error': error connecting / lost within time range  →  warning (yellow)
-const WIFI_BADGE_CLASS: Record<'error' | 'lost', string> = {
-  lost: 'badge-error',
-  error: 'badge-warning',
-}
+// ── Sensor name ───────────────────────────────────────────────
+// Derived from MAC address: strip colons, take last 3 hex chars → e.g. "CB:2F:8B:D7:D2:B1" → "Beam 2B1"
+const sensorName = computed(() =>
+  props.plant.sensorId
+    ? 'Beam ' + props.plant.sensorId.replace(/:/g, '').slice(-3).toUpperCase()
+    : undefined,
+)
+
+const batteryTitle = computed(() => {
+  const level = props.plant.sensorBatteryLevel
+  const name = sensorName.value
+  if (level != null && name) return `${level}% (${name})`
+  if (level != null) return `${level}%`
+  return name
+})
+
+const batteryEmpty = computed(() => props.plant.sensorBatteryLevel === 0)
 
 // ── Sensor meta ───────────────────────────────────────────────
-function timeAgo(dateStr: null | string | undefined): string {
-  if (!dateStr) return ''
-  const date = new Date(dateStr.replace(' ', 'T'))
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
-  if (seconds < 60) return 'gerade eben'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `vor ${String(minutes)} Min`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `vor ${String(hours)} Std`
-  return `vor ${String(Math.floor(hours / 24))} T`
-}
+const lastSeenDate = computed<Date | null>(() => {
+  const d = props.plant.sensorLastSeen
+  if (!d) return null
+  const parsed = new Date(d.replace(' ', 'T') + 'Z')
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+})
+const lastSeen = useRelativeTime(lastSeenDate)
+const lastSeenClass = computed(() =>
+  props.plant.sensorStatus === 'error' ? 'text-error' : 'text-base-content/40',
+)
 </script>
 
 <template>
@@ -51,14 +61,14 @@ function timeAgo(dateStr: null | string | undefined): string {
       <!-- Top-left problem badges -->
       <div class="absolute top-1 left-1 flex gap-0.5">
         <span
-          v-if="plant.wifi_status === 'lost' || plant.wifi_status === 'error'"
+          v-if="plant.sensorBatteryLow"
           class="badge badge-sm gap-0.5"
-          :class="WIFI_BADGE_CLASS[plant.wifi_status]"
-          ><WifiOff class="size-2.5"
-        /></span>
-        <span v-if="plant.sensorBatteryLow" class="badge badge-sm badge-warning gap-0.5"
-          ><BatteryLow class="size-2.5"
-        /></span>
+          :class="batteryEmpty ? 'badge-error' : 'badge-warning'"
+          :title="batteryTitle"
+        >
+          <BatteryWarning v-if="batteryEmpty" class="size-2.5" />
+          <BatteryLow v-else class="size-2.5" />
+        </span>
       </div>
       <AttentionBadge :level="plant.attentionLevel" class="absolute top-1 right-1" />
       <!-- Name + species overlay -->
@@ -89,11 +99,9 @@ function timeAgo(dateStr: null | string | undefined): string {
           :status="plant.salinity_status ?? plant.nutrients_status ?? 'no_data'"
           class="min-w-0"
         />
-        <span
-          class="basis-full text-right text-[10px]"
-          :class="plant.sensorStatus === 'error' ? 'text-error' : 'text-base-content/40'"
-          >{{ plant.sensorLastSeen ? timeAgo(plant.sensorLastSeen) : '' }}</span
-        >
+        <span class="basis-full text-right text-[10px]" :class="lastSeenClass">{{
+          lastSeenDate !== null ? lastSeen : ''
+        }}</span>
       </div>
     </div>
   </div>

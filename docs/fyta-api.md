@@ -12,8 +12,8 @@ Body:
 
 ```json
 {
-    "email": "example@example.com",
-    "password": "examplepassword"
+  "email": "example@example.com",
+  "password": "examplepassword"
 }
 ```
 
@@ -21,11 +21,11 @@ Response:
 
 ```json
 {
-    "access_token": "111111111111111111111111111111111111111",
-    "token_type": "Bearer",
-    "expires_in": 5184000,
-    "refresh_token": "2222222222222222222222222222222222222222",
-    "scope": "mobile"
+  "access_token": "111111111111111111111111111111111111111",
+  "token_type": "Bearer",
+  "expires_in": 5184000,
+  "refresh_token": "2222222222222222222222222222222222222222",
+  "scope": "mobile"
 }
 ```
 
@@ -52,6 +52,22 @@ Response:
   ],
   "plants": [
     {
+      "id": 12,
+      "nickname": "Ficus benjamina 1",
+      "scientific_name": "Ficus benjamina",
+      "common_name": "Birkenfeige",
+      "status": 2,
+      "plant_id": 201,
+      "thumb_path": "<url>",
+      "origin_path": "<url>",
+      "plant_thumb_path": "<url>",
+      "plant_origin_path": "<url>",
+      "wifi_status": 1,
+      "moisture_status": 2,
+      "light_status": 1,
+      "temperature_status": 3,
+      "salinity_status": 2,
+      "nutrients_status": 2,
       "garden": {
         "id": 123
       },
@@ -59,8 +75,6 @@ Response:
         "id": "AA:AA:AA:2B:AF:F4",
         "has_sensor": true,
         "status": 1,
-        "uuid_android": null,
-        "uuid_ios": "4AAAAAA6F-0457-3233-8A43-032B5377E763",
         "version": "0.30.0",
         "is_battery_low": false,
         "received_data_at": "2023-01-01 10:10:00"
@@ -68,6 +82,7 @@ Response:
       "hub": {
         "id": 123,
         "hub_id": "AA:AA:AA:27:7D:6A",
+        "hub_name": "Hub",
         "status": 1,
         "received_data_at": "2023-01-01 01:10:01",
         "reached_hub_at": "2023-01-01 10:10:01"
@@ -336,12 +351,12 @@ Response:
 
 Field `status` represents overall plant status.
 
-| Value | Description |
-|-------|-------------|
-| 0 | User Plant deleted |
-| 1 | User Plant good status |
-| 2 | User Plant bad status |
-| 3 | User Plant no sensor |
+| Value | Description            |
+|-------|------------------------|
+| 0     | User Plant deleted     |
+| 1     | User Plant good status |
+| 2     | User Plant bad status  |
+| 3     | User Plant no sensor   |
 
 ### FYTA Measurement Status
 
@@ -349,42 +364,42 @@ Field `status` represents current measurement for light, temperature, moisture, 
 
 | Value | Description |
 |-------|-------------|
-| 0 | No Data |
-| 1 | Too Low |
-| 2 | Low |
-| 3 | Perfect |
-| 4 | High |
-| 5 | Too High |
+| 0     | No Data     |
+| 1     | Too Low     |
+| 2     | Low         |
+| 3     | Perfect     |
+| 4     | High        |
+| 5     | Too High    |
 
 ### FYTA Sensor Status
 
 Field `status` represents sensor status.
 
-| Value | Description |
-|-------|-------------|
-| 0 | none — when plant does not have sensor |
-| 1 | correct — when plant has sensor, last measurement was ≤ 1.5 h ago OR measurement wasn't sent but sensor was created ≤ 1.5 h ago |
-| 2 | error — when measurement wasn't sent, or when measurement was sent more than 1.5 h ago |
+| Value | Description                                                                                                                     |
+|-------|---------------------------------------------------------------------------------------------------------------------------------|
+| 0     | none — when plant does not have sensor                                                                                          |
+| 1     | correct — when plant has sensor, last measurement was ≤ 1.5 h ago OR measurement wasn't sent but sensor was created ≤ 1.5 h ago |
+| 2     | error — when measurement wasn't sent, or when measurement was sent more than 1.5 h ago                                          |
 
 ### FYTA Hub Status
 
 Field `status` represents Hub status.
 
-| Value | Description |
-|-------|-------------|
-| 1 | correct — last measurement was received ≤ 1.5 h ago |
-| 2 | error — last measurement was received more than 1.5 h ago |
+| Value | Description                                               |
+|-------|-----------------------------------------------------------|
+| 1     | correct — last measurement was received ≤ 1.5 h ago       |
+| 2     | error — last measurement was received more than 1.5 h ago |
 
 ### FYTA Wifi Status
 
 Field `wifi_status` represents wifi status.
 
-| Value | Description |
-|-------|-------------|
-| null | Never connected to any hub, or user doesn't have any hub, or plant doesn't have sensor |
-| 0 | Lost connection to all previously connected hubs |
-| 1 | Is connected to at least one hub |
-| 2 | Error in connecting hub OR hub connection lost within a specific time range |
+| Value | Description                                                                            |
+|-------|----------------------------------------------------------------------------------------|
+| null  | Never connected to any hub, or user doesn't have any hub, or plant doesn't have sensor |
+| 0     | Lost connection to all previously connected hubs                                       |
+| 1     | Is connected to at least one hub                                                       |
+| 2     | Error in connecting hub OR hub connection lost within a specific time range            |
 
 ### FYTA Temperature Unit
 
@@ -392,5 +407,5 @@ Field `temperature_unit` represents unit system.
 
 | Value | Description |
 |-------|-------------|
-| 1 | Celsius |
-| 2 | Fahrenheit |
+| 1     | Celsius     |
+| 2     | Fahrenheit  |

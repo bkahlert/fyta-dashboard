@@ -26,7 +26,9 @@ export interface Plant {
   plant_thumb_path?: null | string
   salinity_status?: MeasurementStatus | null
   scientific_name?: null | string
+  sensorBatteryLevel?: null | number
   sensorBatteryLow?: boolean
+  sensorId?: string
   sensorLastSeen?: null | string
   sensorStatus?: SensorStatusValue
   temperature_status?: MeasurementStatus | null
@@ -36,7 +38,7 @@ export interface Plant {
 
 type PlantInput = Omit<Plant, 'attentionLevel' | 'attentionRank'> & {
   hub?: null | { hub_id?: string; hub_name?: string; reached_hub_at?: null | string; received_data_at?: null | string; status?: HubStatusValue }
-  sensor?: null | { is_battery_low?: boolean; received_data_at?: null | string; status?: SensorStatusValue }
+  sensor?: null | { id?: string; is_battery_low?: boolean; received_data_at?: null | string; status?: SensorStatusValue }
 }
 
 export function createPlant(data: PlantInput): Plant {
@@ -51,6 +53,7 @@ export function createPlant(data: PlantInput): Plant {
     hubName: data.hub?.hub_name ?? undefined,
     hubStatus: data.hub?.status ?? undefined,
     sensorBatteryLow: data.sensor?.is_battery_low ?? undefined,
+    sensorId: data.sensor?.id ?? undefined,
     sensorLastSeen: data.sensor?.received_data_at ?? undefined,
     sensorStatus: data.sensor?.status ?? undefined,
   }

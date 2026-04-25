@@ -1,7 +1,7 @@
 # FYTA Dashboard
 
 A Vue 3 web dashboard for [FYTA](https://fyta.de) plant sensors — displays moisture, light, temperature and nutrient status for all your plants in a responsive,
-pinch-zoomable card grid.
+auto-zooming card grid.
 
 ![Vue 3](https://img.shields.io/badge/Vue-3-42b883?logo=vue.js&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8-646cff?logo=vite&logoColor=white)
@@ -15,9 +15,8 @@ pinch-zoomable card grid.
 
 ## Features
 
-- **Plant grid** — responsive auto-fill grid sorted by watering urgency
-- **Pinch-to-zoom** — pinch gesture scales the grid; zoom persists across sessions
-- **Attention model** — plants ranked as *now* / *soon* / *ok* with watering-can badges
+- **Plant grid** — responsive auto-fill grid that auto-zooms to fill the screen, sorted by watering urgency
+- **Attention model** — plants ranked as *now* / *soon* / *ok* / *skip* with watering-can badges
 - **Photo lightbox** — tap any plant photo to view it full-screen
 - **Hub alerts** — banner when a FYTA hub loses its cloud connection
 - **Image proxy** — proxies FYTA image URLs so the browser never needs CORS access

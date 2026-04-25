@@ -1,6 +1,7 @@
 # FYTA Dashboard
 
-A Vue 3 web dashboard for [FYTA](https://fyta.de) plant sensors — displays moisture, light, temperature and nutrient status for all your plants in a responsive, pinch-zoomable card grid.
+A Vue 3 web dashboard for [FYTA](https://fyta.de) plant sensors — displays moisture, light, temperature and nutrient status for all your plants in a responsive,
+pinch-zoomable card grid.
 
 ![Vue 3](https://img.shields.io/badge/Vue-3-42b883?logo=vue.js&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8-646cff?logo=vite&logoColor=white)
@@ -24,14 +25,15 @@ A Vue 3 web dashboard for [FYTA](https://fyta.de) plant sensors — displays moi
 
 ## Prerequisites
 
-| Requirement | Version |
-|-------------|---------|
-| Node.js | 20+ |
-| npm | 10+ |
-| Python | 3.11+ (production server only) |
-| Docker | any (optional) |
+| Requirement | Version                        |
+|-------------|--------------------------------|
+| Node.js     | 20+                            |
+| npm         | 10+                            |
+| Python      | 3.11+ (production server only) |
+| Docker      | any (optional)                 |
 
-A FYTA API token is required for image proxying. Create one at [web.fyta.de/api-token](https://web.fyta.de/api-token), then store it in `.env.local` (never committed):
+A FYTA API token is required for image proxying. Create one at [web.fyta.de/api-token](https://web.fyta.de/api-token), then store it in `.env.local` (never
+committed):
 
 ```sh
 echo "FYTA_API_TOKEN=<your-token>" > .env.local
@@ -66,9 +68,9 @@ FYTA_API_TOKEN=$(grep FYTA_API_TOKEN .env.local | cut -d= -f2) python3 deploy/se
 
 ### Proxy routes
 
-| Path | Upstream |
-|------|----------|
-| `/api/*` | `https://web.fyta.de/api/*` — REST API (auth forwarded from the browser) |
+| Path           | Upstream                                                                    |
+|----------------|-----------------------------------------------------------------------------|
+| `/api/*`       | `https://web.fyta.de/api/*` — REST API (auth forwarded from the browser)    |
 | `/img-proxy/*` | `https://api.prod.fyta-app.de/*` — plant images (auth via `FYTA_API_TOKEN`) |
 
 ## Docker
@@ -84,7 +86,7 @@ open http://localhost:8080
 
 The container exits immediately with a clear error message if `FYTA_API_TOKEN` is not set.
 
-## History
+## Previous versions
 
 <figure>
   <img src="docs/v1-home-assistant-dashboard.png" alt="FYTA Dashboard v1 — Home Assistant">

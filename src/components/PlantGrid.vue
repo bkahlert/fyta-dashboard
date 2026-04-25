@@ -68,7 +68,7 @@ async function fitZoom() {
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  resizeObserver = new ResizeObserver(fitZoom)
+  resizeObserver = new ResizeObserver(() => requestAnimationFrame(fitZoom))
   if (outerRef.value) resizeObserver.observe(outerRef.value)
   nextTick(fitZoom)
 })

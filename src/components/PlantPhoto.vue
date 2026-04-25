@@ -43,7 +43,7 @@ const largePhotoUrl = computed(() => {
 
 <template>
   <figure
-    class="relative overflow-hidden shrink-0 bg-base-200 aspect-4/3"
+    class="relative overflow-hidden shrink-0 bg-base-200 aspect-square"
     :class="{ 'cursor-pointer': photoUrl }"
     @click="photoUrl && (showLightbox = true)"
   >
@@ -66,10 +66,11 @@ const largePhotoUrl = computed(() => {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/85"
       @click="showLightbox = false"
     >
+      <!-- FYTA backend bakes a ~2px white column into the right edge of every origin image -->
       <img
         :src="largePhotoUrl ?? ''"
         :alt="alt ?? ''"
-        class="max-w-[90vw] max-h-[90vh] object-contain rounded [clip-path:inset(0_1px_0_0)]"
+        class="max-w-[90vw] max-h-[90vh] object-contain rounded [clip-path:inset(0_2px_0_0)]"
       />
     </div>
   </Teleport>

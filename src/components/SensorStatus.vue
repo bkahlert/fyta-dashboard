@@ -123,6 +123,6 @@ const label = computed(() => sensorLabels[props.type][props.status])
       <Check v-if="isOk" class="indicator-item size-2 text-success" />
       <component :is="icon" class="size-3 shrink-0" :stroke-width="entry.strokeWidth ?? 2" />
     </span>
-    <span v-if="!isOk && label" class="text-xs leading-none truncate">{{ label }}</span>
+    <span v-if="!isOk && label" class="text-xs leading-tight truncate">{{ label }}</span>
   </span>
 </template>

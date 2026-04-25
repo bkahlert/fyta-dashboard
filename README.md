@@ -1,4 +1,4 @@
-# 🌿 FYTA Dashboard
+# FYTA Dashboard
 
 A Vue 3 web dashboard for [FYTA](https://fyta.de) plant sensors — displays moisture, light, temperature and nutrient status for all your plants in a responsive, pinch-zoomable card grid.
 
@@ -10,6 +10,8 @@ A Vue 3 web dashboard for [FYTA](https://fyta.de) plant sensors — displays moi
 
 ---
 
+![FYTA Dashboard](docs/v2-vue.png)
+
 ## Features
 
 - **Plant grid** — responsive auto-fill grid sorted by watering urgency
@@ -19,18 +21,6 @@ A Vue 3 web dashboard for [FYTA](https://fyta.de) plant sensors — displays moi
 - **Hub alerts** — banner when a FYTA hub loses its cloud connection
 - **Image proxy** — proxies FYTA image URLs so the browser never needs CORS access
 - **Docker-ready** — single-container deploy with a built-in Python server
-
-## Screenshots
-
-<figure>
-  <img src="docs/v1-home-assistant-dashboard.png" alt="FYTA Dashboard v1 — Home Assistant">
-  <figcaption>v1: Home Assistant Lovelace dashboard</figcaption>
-</figure>
-
-<figure>
-  <img src="docs/v0-vanilla-js.png" alt="FYTA Dashboard v0 — vanilla JS">
-  <figcaption>v0: vanilla JavaScript prototype</figcaption>
-</figure>
 
 ## Prerequisites
 
@@ -56,20 +46,7 @@ npm run dev        # Vite dev server at http://localhost:5173
 
 The dev server does not include the image proxy. Plant photos will fall back to the FYTA plant-species thumbnail when the proxy is unavailable.
 
-### Available scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Production build to `dist/` |
-| `npm run preview` | Preview production build |
-| `npm run storybook` | Start Storybook component explorer at port 6006 |
-| `npm run test` | Run Vitest unit tests |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run type-check` | TypeScript type-check without emitting |
-| `npm run lint` | ESLint |
-| `npm run lint:fix` | ESLint with auto-fix |
-| `npm run format` | Prettier |
+Components have [Storybook](https://storybook.js.org) stories — run `npm run storybook` to explore them at port 6006.
 
 ## Running the full stack locally
 
@@ -107,41 +84,17 @@ open http://localhost:8080
 
 The container exits immediately with a clear error message if `FYTA_API_TOKEN` is not set.
 
-## Project structure
+## History
 
-```
-src/
-├── api/              # Zod schemas + typed API calls
-├── components/       # Vue SFCs (each has a *.stories.ts)
-│   ├── icons/        # Custom SVG icon components
-│   ├── AppHeader.vue
-│   ├── AttentionBadge.vue
-│   ├── PlantCard.vue
-│   ├── PlantGrid.vue
-│   ├── PlantPhoto.vue
-│   └── SensorStatus.vue
-├── composables/      # usePlants — data fetching + polling
-├── types/            # plant.ts — domain types and attention model
-├── App.vue
-└── main.ts
-deploy/
-├── Dockerfile
-├── server.py         # Python HTTP server with proxy routes
-└── entrypoint.sh
-```
+<figure>
+  <img src="docs/v1-home-assistant-dashboard.png" alt="FYTA Dashboard v1 — Home Assistant">
+  <figcaption>v1: Home Assistant Lovelace dashboard</figcaption>
+</figure>
 
-## Tech stack
-
-| Layer | Library |
-|-------|---------|
-| Framework | [Vue 3](https://vuejs.org) (Composition API + `<script setup>`) |
-| Build | [Vite](https://vite.dev) |
-| Styling | [Tailwind CSS v4](https://tailwindcss.com) + [DaisyUI](https://daisyui.com) |
-| Utilities | [VueUse](https://vueuse.org) |
-| Icons | [Lucide](https://lucide.dev) + custom SVG components |
-| Validation | [Zod v4](https://zod.dev) |
-| Testing | [Vitest](https://vitest.dev) + [Storybook](https://storybook.js.org) |
-| Server | Python `http.server` with proxy |
+<figure>
+  <img src="docs/v0-vanilla-js.png" alt="FYTA Dashboard v0 — vanilla JS">
+  <figcaption>v0: vanilla JavaScript prototype</figcaption>
+</figure>
 
 ## License
 

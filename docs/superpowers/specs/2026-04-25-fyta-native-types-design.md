@@ -115,9 +115,20 @@ Callers pass `plant.measurements.moisture.values.currentFormatted` + `plant.meas
 - `src/composables/useBatteryLevels.ts` — entire file
 - `App.vue` — `plantsWithBattery` computed, `useBatteryLevels` import/usage
 
-## Open questions for implementation
+## Schema robustness
 
-- **Sensorless plants via detail endpoint**: The current `PlantDetailSchema` declares `sensor` as non-nullable, but sensorless plants exist. Verify what the detail endpoint returns for them (`sensor: null`? different shape? HTTP error?) before switching — may require making `sensor` nullable in the schema.
+Any deviation from the documented API that has been observed in practice must be reflected in the schema with `.nullish()` (and `.catch(undefined)` where a parse failure should not invalidate the whole plant). Known deviations:
+
+| Field | Observed deviation | Schema treatment |
+|---|---|---|
+| `sensor` | `null` for sensorless plants (seen in list endpoint) | `.nullish().catch(undefined)` |
+| `hub` | `null`/absent for sensorless plants (seen in list endpoint) | `.nullish().catch(undefined)` |
+| `garden` | `null`/absent in some responses (seen in list endpoint) | `.nullish().catch(undefined)` |
+| `measurements` | likely absent/null for sensorless plants | `.nullish()` on the whole object and all sub-fields |
+| `wifi_status` | `null` for sensorless plants or plants without a hub | already handled via `WifiStatus` (maps null → `'none'`) |
+| `sensor.received_data_at` | `null` observed | already `.nullable()` |
+
+**Rule:** when in doubt, prefer `.nullish()` over hard-failing. The dashboard should degrade gracefully per-plant rather than crashing on unexpected API shapes.
 
 ## What does NOT change
 

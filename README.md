@@ -85,6 +85,22 @@ open http://localhost:8080
 
 The container exits immediately with a clear error message if `FYTA_API_TOKEN` is not set.
 
+## Container image
+
+Pre-built multi-arch images (`linux/amd64`, `linux/arm64`) are published to Docker Hub:
+
+<https://hub.docker.com/r/bkahlert/fyta-dashboard>
+
+```bash
+docker run --rm -p 8080:8080 \
+  -e FYTA_API_TOKEN=<your-token> \
+  bkahlert/fyta-dashboard:latest
+```
+
+`FYTA_API_TOKEN` is required — obtain it from your FYTA account settings.
+
+Tags: `latest` tracks `main`; `vX.Y.Z` and `X.Y` track semver release tags; `sha-<short>` pins to a specific commit.
+
 ## Previous versions
 
 <figure>

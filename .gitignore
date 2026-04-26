@@ -15,3 +15,6 @@ node_modules/
 # macOS
 .DS_Store
 .vite/
+
+# Local-only drift / scratch notes (not part of the workflow itself)
+.github/workflows/_DRIFT_NOTES.md

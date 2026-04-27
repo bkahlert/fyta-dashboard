@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs'
 import type { ClientRequest } from 'node:http'
 
 // @tailwindcss/vite ESM-imports .css files (e.g. daisyui.css) during build,
@@ -20,6 +21,12 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       vue(),
+      {
+        name: 'version-json',
+        closeBundle() {
+          writeFileSync('dist/version.json', JSON.stringify({ version: Date.now().toString() }))
+        },
+      },
       VitePWA({
         injectRegister: null,
         manifest: {

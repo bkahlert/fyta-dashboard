@@ -3,7 +3,10 @@ import { computed } from 'vue'
 
 import AppHeader from './components/AppHeader.vue'
 import PlantGrid from './components/PlantGrid.vue'
+import { useAutoReload } from './composables/useAutoReload'
 import { usePlants } from './composables/usePlants'
+
+useAutoReload()
 
 const { error, execute, isFetching, lastUpdated, lostHubs, plants } = usePlants()
 

@@ -10,7 +10,7 @@ const props = defineProps<{ plants: Plant[] }>()
 const sorted = computed(() =>
   props.plants.toSorted(
     (a, b) =>
-      a.attentionRank - b.attentionRank || (a.nickname ?? '').localeCompare(b.nickname ?? '', 'de'),
+      a.attentionRank - b.attentionRank || a.moistureRank - b.moistureRank || (a.nickname ?? '').localeCompare(b.nickname ?? '', 'de'),
   ),
 )
 

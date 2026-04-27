@@ -117,7 +117,7 @@ const ATTENTION_RANK = Object.fromEntries(
 ) as Record<AttentionLevel, number>
 
 // Within the same attentionLevel, sort perfect < high (no_data/too_low/low/too_high are handled by attentionLevel already)
-const MOISTURE_RANK: Record<MeasurementStatusValue, number> = {
+export const MOISTURE_RANK: Record<MeasurementStatusValue, number> = {
   too_low: 0,
   low: 1,
   no_data: 2,

@@ -22,6 +22,7 @@ export function usePlants() {
       const listResult = UserPlantsResponseSchema.safeParse(listRaw)
       if (!listResult.success) {
         console.error('[usePlants] list parse failed:', z.treeifyError(listResult.error))
+        error.value = new Error('Plant list response did not match schema — the FYTA API may have changed')
         return
       }
       lostHubs.value = listResult.data.hubs_with_lost_connection

@@ -1,7 +1,18 @@
 import { useIntervalFn } from '@vueuse/core'
 
-export function useAutoReload(intervalMs = 5 * 60 * 1000) {
+export async function useAutoReload() {
   if (import.meta.env.DEV) return
+
+  let intervalMs = 60_000
+  try {
+    const res = await fetch('/config.json')
+    if (res.ok) {
+      const cfg = (await res.json()) as { autoReloadInterval?: number }
+      if (cfg.autoReloadInterval) intervalMs = cfg.autoReloadInterval
+    }
+  } catch {
+    // use default
+  }
 
   let baseVersion: string | null = null
 

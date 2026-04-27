@@ -8,4 +8,7 @@ if [[ -z "${FYTA_API_TOKEN:-}" ]]; then
     exit 1
 fi
 
+DIST="$(dirname "$0")/dist"
+printf '{"autoReloadInterval":%s}\n' "${AUTO_RELOAD_INTERVAL:-60000}" > "$DIST/config.json"
+
 exec python3 "$(dirname "$0")/server.py"

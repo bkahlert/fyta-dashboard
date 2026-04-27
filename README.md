@@ -99,6 +99,11 @@ docker run --rm -p 8080:8080 \
 
 `FYTA_API_TOKEN` is required — obtain it from your FYTA account settings.
 
+| Variable | Default | Description |
+|---|---|---|
+| `FYTA_API_TOKEN` | — | **Required.** FYTA API token. |
+| `AUTO_RELOAD_INTERVAL` | `60000` | How often (ms) the dashboard checks for a new build and reloads automatically. |
+
 Tags: `latest` tracks `main`; `vX.Y.Z` and `X.Y` track semver release tags; `sha-<short>` pins to a specific commit.
 
 ## Previous versions

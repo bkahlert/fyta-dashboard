@@ -116,6 +116,16 @@ const ATTENTION_RANK = Object.fromEntries(
   ATTENTION_LEVELS.map((level, i) => [level, i]),
 ) as Record<AttentionLevel, number>
 
+// Within the same attentionLevel, sort perfect < high (no_data/too_low/low/too_high are handled by attentionLevel already)
+const MOISTURE_RANK: Record<MeasurementStatusValue, number> = {
+  too_low: 0,
+  low: 1,
+  no_data: 2,
+  perfect: 2,
+  high: 3,
+  too_high: 4,
+}
+
 function computeAttention(data: { measurements?: { moisture?: { status: MeasurementStatusValue } | null } | null }): AttentionLevel {
   const moisture = data.measurements?.moisture?.status ?? 'no_data'
   if (moisture === 'too_low') return 'now'
@@ -346,10 +356,12 @@ export const PlantDetailSchema = z.object({
   const rawBattery = data.measurements?.battery
   const battery_status: MeasurementStatusValue | null =
     rawBattery != null ? deriveStatus(Number(rawBattery), { min_acceptable: 1, min_good: 20 }) : null
+  const moistureStatus = data.measurements?.moisture?.status ?? 'no_data'
   return {
     ...data,
     attentionLevel,
     attentionRank: ATTENTION_RANK[attentionLevel],
+    moistureRank: MOISTURE_RANK[moistureStatus],
     battery_status,
   }
 })

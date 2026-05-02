@@ -1,4 +1,4 @@
-import { ATTENTION_LEVELS } from '../api/schemas'
+import { ATTENTION_LEVELS, MOISTURE_RANK } from '../api/schemas'
 import type { Plant } from '../api/schemas'
 
 export type DeepPartial<T> = { [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K] }
@@ -50,10 +50,12 @@ export function makePlant(overrides: DeepPartial<Plant> = {}): Plant {
     know_hows: [],
     attentionLevel: 'ok',
     attentionRank: 2,
+    moistureRank: MOISTURE_RANK['perfect'],
     battery_status: 'perfect',
   }
   const plant = { ...base, ...overrides } as Plant
   plant.attentionRank = ATTENTION_LEVELS.indexOf(plant.attentionLevel)
+  plant.moistureRank = MOISTURE_RANK[plant.measurements?.moisture?.status ?? 'no_data']
   return plant
 }
 

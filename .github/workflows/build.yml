@@ -61,18 +61,3 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: mode=max
           sbom: true
-
-      - name: Trigger Coolify deploy
-        if: github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'
-        env:
-          URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
-          TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
-        run: |
-          if [[ -z "$URL" ]]; then
-            echo "ℹ COOLIFY_WEBHOOK_URL not set yet — skipping deploy trigger."
-            exit 0
-          fi
-          curl -fsSL -X POST \
-            ${TOKEN:+-H "Authorization: Bearer $TOKEN"} \
-            -H 'Accept: application/json' \
-            "$URL"

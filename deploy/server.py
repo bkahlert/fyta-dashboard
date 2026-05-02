@@ -7,6 +7,7 @@ Usage: FYTA_API_TOKEN=<token> python3 server.py
 """
 import http.server
 import os
+import socket
 import urllib.request
 import urllib.error
 
@@ -97,12 +98,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         pass  # silence access log
 
 
+class DualStackHTTPServer(http.server.HTTPServer):
+    # Accept both IPv6 and IPv4 (via v4-mapped addresses) on a single socket so
+    # the in-container healthcheck reaches us whether localhost resolves to
+    # ::1 or 127.0.0.1 on the host network.
+    address_family = socket.AF_INET6
+
+    def server_bind(self):
+        self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        super().server_bind()
+
+
 if __name__ == '__main__':
     if not os.path.isdir(DIST_DIR):
         print(f"ERROR: dist/ not found — run 'npm run build' first")
         raise SystemExit(1)
     if not TOKEN:
         print("WARNING: FYTA_API_TOKEN is not set — API requests will fail")
-    with http.server.HTTPServer(('', PORT), Handler) as srv:
+    with DualStackHTTPServer(('::', PORT), Handler) as srv:
         print(f"FYTA Dashboard → http://localhost:{PORT}")
         srv.serve_forever()

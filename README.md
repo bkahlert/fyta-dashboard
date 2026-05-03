@@ -3,11 +3,8 @@
 A Vue 3 web dashboard for [FYTA](https://fyta.de) plant sensors — displays moisture, light, temperature and nutrient status for all your plants in a responsive,
 auto-zooming card grid.
 
-![Vue 3](https://img.shields.io/badge/Vue-3-42b883?logo=vue.js&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-8-646cff?logo=vite&logoColor=white)
-![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?logo=tailwindcss&logoColor=white)
-![DaisyUI](https://img.shields.io/badge/DaisyUI-5-5a0ef6)
-![TypeScript](https://img.shields.io/badge/TypeScript-6-3178c6?logo=typescript&logoColor=white)
+[![Build](https://github.com/bkahlert/fyta-dashboard/actions/workflows/build.yml/badge.svg)](https://github.com/bkahlert/fyta-dashboard/actions/workflows/build.yml)
+[![Docker Hub](https://img.shields.io/docker/v/bkahlert/fyta-dashboard?logo=docker&label=docker&sort=semver)](https://hub.docker.com/r/bkahlert/fyta-dashboard)
 
 ---
 

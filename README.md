@@ -1,11 +1,7 @@
-# FYTA Dashboard
+# FYTA Dashboard [![Build](https://github.com/bkahlert/fyta-dashboard/actions/workflows/build.yml/badge.svg)](https://github.com/bkahlert/fyta-dashboard/actions/workflows/build.yml) [![Docker Hub](https://img.shields.io/docker/v/bkahlert/fyta-dashboard?logo=docker&label=docker&sort=semver)](https://hub.docker.com/r/bkahlert/fyta-dashboard) [![Buy Me A Coffee](https://img.shields.io/static/v1?label=&message=%E2%98%95%20Buy%20Me%20A%20Coffee&color=FFDD00)](https://www.buymeacoffee.com/bkahlert)
 
 A Vue 3 web dashboard for [FYTA](https://fyta.de) plant sensors — displays moisture, light, temperature and nutrient status for all your plants in a responsive,
 auto-zooming card grid.
-
-[![Build](https://github.com/bkahlert/fyta-dashboard/actions/workflows/build.yml/badge.svg)](https://github.com/bkahlert/fyta-dashboard/actions/workflows/build.yml)
-[![Docker Hub](https://img.shields.io/docker/v/bkahlert/fyta-dashboard?logo=docker&label=docker&sort=semver)](https://hub.docker.com/r/bkahlert/fyta-dashboard)
-[![Buy Me A Coffee](https://img.shields.io/static/v1?label=&message=%E2%98%95%20Buy%20Me%20A%20Coffee&color=FFDD00)](https://www.buymeacoffee.com/bkahlert)
 
 ---
 
